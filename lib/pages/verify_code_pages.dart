@@ -3,7 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:terraserve_app/pages/reset_password_pages.dart'; // Import halaman selanjutnya
 
 class VerifyCodePage extends StatefulWidget {
-  const VerifyCodePage({super.key});
+  // Menerima email atau nomor telepon dari halaman sebelumnya
+  final String identifier;
+
+  const VerifyCodePage({super.key, required this.identifier});
 
   @override
   State<VerifyCodePage> createState() => _VerifyCodePageState();
@@ -11,9 +14,40 @@ class VerifyCodePage extends StatefulWidget {
 
 class _VerifyCodePageState extends State<VerifyCodePage> {
   // Controllers untuk setiap kotak OTP
-  final List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
   // FocusNodes untuk mengatur fokus antar kotak
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
+
+  // Fungsi yang dijalankan saat tombol "Verifikasi" ditekan
+  void _verifyCode() {
+    // Gabungkan semua digit dari setiap kotak menjadi satu string
+    final otp = _controllers.map((c) => c.text).join();
+
+    // Cek jika OTP sudah terisi 4 digit
+    if (otp.length == 4) {
+      // Navigasi ke halaman Reset Password, kirim identifier dan OTP
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResetPasswordPage(
+            identifier: widget.identifier,
+            token: otp, // Kirim OTP yang sudah digabung
+          ),
+        ),
+      );
+    } else {
+      // Tampilkan notifikasi jika OTP belum lengkap
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Harap isi semua 4 digit kode verifikasi.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -28,10 +62,8 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
 
   void _onTextChanged(String value, int index) {
     if (value.length == 1 && index < 3) {
-      // Pindah fokus ke kotak selanjutnya jika satu karakter dimasukkan
       FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
     } else if (value.isEmpty && index > 0) {
-      // Pindah fokus ke kotak sebelumnya jika karakter dihapus
       FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
     }
   }
@@ -54,10 +86,7 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // ✅ Jarak dari AppBar ke Judul
               const SizedBox(height: 112),
-
-              // Judul
               Text(
                 'Verifikasi Kode',
                 textAlign: TextAlign.center,
@@ -68,19 +97,30 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Subjudul
-              Text(
-                'Masukkan kode verifikasi dari email atau nomor telepon yang telah kami kirim',
+              RichText(
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: Colors.grey[600],
+                text: TextSpan(
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
+                  children: [
+                    const TextSpan(
+                      text:
+                          'Masukkan kode verifikasi yang telah kami kirim ke ',
+                    ),
+                    TextSpan(
+                      text:
+                          widget.identifier, // Menampilkan email atau no. telp
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              // ✅ Jarak dari Subjudul ke Form Input
               const SizedBox(height: 112),
-
-              // Kotak Input OTP
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(4, (index) {
@@ -94,7 +134,10 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.number,
                       maxLength: 1,
-                      style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.poppins(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                       decoration: InputDecoration(
                         counterText: '',
                         border: OutlineInputBorder(
@@ -110,24 +153,18 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                   );
                 }),
               ),
-              // ✅ Jarak dari Form Input ke Tombol
               const SizedBox(height: 112),
-
-              // Tombol Verifikasi
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Pindah ke halaman Atur Ulang Kata Sandi
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ResetPasswordPage()),
-                    );
-                  },
+                  // Panggil fungsi _verifyCode saat tombol ditekan
+                  onPressed: _verifyCode,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF859F3D),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: Text(
                     'Verifikasi',
@@ -139,7 +176,7 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20), // Jarak tambahan di bawah
+              const SizedBox(height: 20),
             ],
           ),
         ),

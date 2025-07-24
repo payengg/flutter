@@ -54,21 +54,33 @@ class _LupaPwPagesState extends State<LupaPwPages> {
       );
 
       final responseBody = json.decode(response.body);
+
+      // --- PERBAIKAN LOGIKA ADA DI SINI ---
       if (response.statusCode == 200) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(responseBody['meta']['message'] ?? 'Kode OTP telah dikirim.'),
+              content: Text(
+                responseBody['meta']?['message'] ?? 'Kode OTP telah dikirim.',
+              ),
               backgroundColor: Colors.green,
             ),
           );
-          // TODO: Navigasi ke halaman verifikasi OTP
+          // Navigasi ke halaman verifikasi kode
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => VerifyCodePage(identifier: value),
+            ),
+          );
         }
       } else {
+        // Ini adalah blok untuk menangani GAGAL
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(responseBody['meta']['message'] ?? 'Gagal mengirim kode.'),
+              content: Text(
+                responseBody['meta']?['message'] ?? 'Gagal mengirim kode.',
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -78,7 +90,7 @@ class _LupaPwPagesState extends State<LupaPwPages> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Tidak dapat terhubung ke server. Periksa koneksi Anda.'),
+            content: Text('Tidak dapat terhubung ke server.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -242,7 +254,8 @@ class _LupaPwPagesState extends State<LupaPwPages> {
     return TextFormField(
       controller: _inputController,
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Nomor telepon tidak boleh kosong';
+        if (value == null || value.isEmpty)
+          return 'Nomor telepon tidak boleh kosong';
         return null;
       },
       keyboardType: TextInputType.phone,
@@ -258,7 +271,9 @@ class _LupaPwPagesState extends State<LupaPwPages> {
                 });
               },
               countryListTheme: CountryListThemeData(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
                 bottomSheetHeight: 500,
                 inputDecoration: InputDecoration(
                   labelText: 'Cari Negara',
@@ -276,7 +291,10 @@ class _LupaPwPagesState extends State<LupaPwPages> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(_selectedCountry.flagEmoji, style: const TextStyle(fontSize: 24)),
+                Text(
+                  _selectedCountry.flagEmoji,
+                  style: const TextStyle(fontSize: 24),
+                ),
                 const SizedBox(width: 8),
                 Text(
                   '+${_selectedCountry.phoneCode}',
@@ -312,9 +330,12 @@ class _LupaPwPagesState extends State<LupaPwPages> {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF859F3D),
           disabledBackgroundColor: const Color(0xFF859F3D).withOpacity(0.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-        child: child ??
+        child:
+            child ??
             Text(
               text,
               style: GoogleFonts.poppins(
