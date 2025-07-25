@@ -6,6 +6,7 @@ import 'package:terraserve_app/config/api.dart';
 import 'package:terraserve_app/pages/main_page.dart'; // ✅ 1. Import MainPage
 import 'package:terraserve_app/pages/register_pages.dart';
 import 'package:terraserve_app/pages/lupa_pw_pages.dart';
+import 'package:terraserve_app/pages/dashboard_pages.dart'; // Import halaman dashboard jika diperlukan
 
 class LoginPages extends StatefulWidget {
   const LoginPages({super.key});
