@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:terraserve_app/config/api.dart';
 import 'package:terraserve_app/pages/login_pages.dart';
+import 'package:terraserve_app/pages/reset_password_confirm.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   // Menerima data dari halaman verifikasi
@@ -72,9 +73,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           );
           // Kembali ke halaman login dan hapus semua halaman sebelumnya
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const LoginPages()),
+            MaterialPageRoute(builder: (context) => const ResetPasswordConfirmPage()),
             (route) => false,
-          );
+          );  
         }
       } else {
         String errorMessage =
