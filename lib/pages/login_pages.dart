@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:terraserve_app/config/api.dart'; // Pastikan file ini ada
-import 'package:terraserve_app/pages/dashboard_pages.dart'; // Halaman tujuan setelah login
+import 'package:terraserve_app/config/api.dart';
+import 'package:terraserve_app/pages/main_page.dart'; // ✅ 1. Import MainPage
 import 'package:terraserve_app/pages/register_pages.dart';
 import 'package:terraserve_app/pages/lupa_pw_pages.dart';
 
@@ -15,19 +15,14 @@ class LoginPages extends StatefulWidget {
 }
 
 class _LoginPagesState extends State<LoginPages> {
-  // Kunci untuk validasi form
   final _formKey = GlobalKey<FormState>();
-
-  // Controller untuk mengambil teks
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // State untuk UI
   bool _isPasswordVisible = false;
   bool _rememberMe = false;
   bool _isLoading = false;
 
-  // Fungsi untuk menangani proses login
   Future<void> _loginUser() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -53,15 +48,16 @@ class _LoginPagesState extends State<LoginPages> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body)['data'];
         final accessToken = data['access_token'];
-        final user = data['User']; // atau 'user' tergantung respon API Anda
+        final user =
+            data['User']; // ✅ 2. Sesuaikan dengan respon API (user lowercase)
 
         // TODO: Simpan access_token dengan aman (misal: flutter_secure_storage)
 
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              // Kirim data user ke halaman dashboard
-              builder: (context) => DashboardPages(user: user),
+              // ✅ 3. Arahkan ke MainPage dan kirim data user
+              builder: (context) => MainPage(user: user),
             ),
           );
         }
@@ -122,7 +118,6 @@ class _LoginPagesState extends State<LoginPages> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Form(
-                  // Menggunakan Form
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,7 +179,7 @@ class _LoginPagesState extends State<LoginPages> {
     );
   }
 
-  // --- WIDGET BUILDER METHODS (Sudah dimodifikasi) ---
+  // --- WIDGET BUILDER METHODS (Tidak ada perubahan di sini) ---
 
   Widget _buildLoginTabs() {
     return Container(
