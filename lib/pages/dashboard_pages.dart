@@ -285,7 +285,7 @@ class _DashboardPagesState extends State<DashboardPages> {
             children: [
               Text('Kategori',
                   style: GoogleFonts.poppins(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
+                      fontSize: 20, fontWeight: FontWeight.bold)),
               // Menggunakan InkWell agar area klik lebih luas
               InkWell(
                 onTap: () {},
@@ -294,11 +294,11 @@ class _DashboardPagesState extends State<DashboardPages> {
                     Text(
                       'Lihat semua', // Teks diubah
                       style: GoogleFonts.poppins(
-                          color: const Color(0xFF859F3D), // Warna diubah
-                          fontWeight: FontWeight.w600),
+                          color: const Color(0xFF31511E), // Warna diubah
+                          fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.arrow_forward_ios, color: Color(0xFF859F3D), size: 14), // Ikon panah
+                    const Icon(Icons.arrow_forward_ios, color: Color(0xFF61AD4E), size: 17), // Ikon panah
                   ],
                 ),
               ),
