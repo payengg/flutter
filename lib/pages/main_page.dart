@@ -86,71 +86,151 @@ class _MainPageState extends State<MainPage> {
 
   // ✅ WIDGET NAVBAR TELAH DIPERBARUI TOTAL
   Widget _buildFloatingNavigationBar() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(icon: Icons.home, label: 'Beranda', index: 0),
-            _buildNavItem(icon: Icons.chat_bubble_outline, label: 'Pesan', index: 1),
-            _buildNavItem(icon: Icons.shopping_basket_outlined, label: 'Pesanan', index: 2),
-            _buildNavItem(icon: Icons.favorite_border, label: 'Favorit', index: 3),
-            _buildNavItem(icon: Icons.person_outline, label: 'Akun', index: 4),
-          ],
-        ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-    );
-  }
-
-  // ✅ WIDGET BARU UNTUK SETIAP ITEM NAVIGASI
-  Widget _buildNavItem({required IconData icon, required String label, required int index}) {
-    final bool isSelected = _selectedIndex == index;
-    return InkWell(
-      onTap: () => _onItemTapped(index),
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Lingkaran hijau di belakang ikon (hanya muncul jika terpilih)
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF859F3D) : Colors.transparent,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: isSelected ? Colors.white : Colors.grey[600],
-                size: 24,
-              ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: SizedBox(
+          height: 85,
+          child: BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: Colors.black,
+            unselectedItemColor: Colors.grey[500],
+            selectedLabelStyle: GoogleFonts.poppins(
+              fontWeight: FontWeight.w500,
+              color: Colors.black,
             ),
-            const SizedBox(height: 4),
-            // Teks label
-            Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-                color: isSelected ? Colors.black : Colors.grey[600],
-              ),
+            unselectedLabelStyle: GoogleFonts.poppins(
+              fontWeight: FontWeight.w400,
             ),
-          ],
+            items: <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                label: 'Beranda',
+                icon: Image.asset(
+                  'assets/images/icon_rumah.png',
+                  width: 24,
+                  height: 24,
+                  color: Colors.grey[500],
+                ),
+                activeIcon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF859F3D),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.asset(
+                    'assets/images/icon_rumah.png',
+                    width: 24,
+                    height: 24,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              BottomNavigationBarItem(
+                label: 'Pesan',
+                icon: Image.asset(
+                  'assets/images/icon_pesan.png',
+                  width: 24,
+                  height: 24,
+                  color: Colors.grey[500],
+                ),
+                activeIcon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF859F3D),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.asset(
+                    'assets/images/icon_pesan.png',
+                    width: 24,
+                    height: 24,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              BottomNavigationBarItem(
+                label: 'Pesanan',
+                icon: Image.asset(
+                  'assets/images/icon_pesanan.png',
+                  width: 24,
+                  height: 24,
+                  color: Colors.grey[500],
+                ),
+                activeIcon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF859F3D),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.asset(
+                    'assets/images/icon_pesanan.png',
+                    width: 24,
+                    height: 24,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              BottomNavigationBarItem(
+                label: 'Favorit',
+                icon: Image.asset(
+                  'assets/images/icon_favorit.png',
+                  width: 24,
+                  height: 24,
+                  color: Colors.grey[500],
+                ),
+                activeIcon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF859F3D),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.asset(
+                    'assets/images/icon_favorit.png',
+                    width: 24,
+                    height: 24,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              BottomNavigationBarItem(
+                label: 'Akun',
+                icon: Image.asset(
+                  'assets/images/icon_akun.png',
+                  width: 24,
+                  height: 24,
+                  color: Colors.grey[500],
+                ),
+                activeIcon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF859F3D),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.asset(
+                    'assets/images/icon_akun.png',
+                    width: 24,
+                    height: 24,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:terraserve_app/config/api.dart';
 import 'package:terraserve_app/pages/main_page.dart'; 
+import 'package:terraserve_app/config/api.dart'; // Menggunakan baseUrl dari sini
+import 'package:terraserve_app/pages/main_page.dart';
 import 'package:terraserve_app/pages/register_pages.dart';
 import 'package:terraserve_app/pages/lupa_pw_pages.dart';
 import 'package:terraserve_app/pages/dashboard_pages.dart'; 
@@ -34,6 +36,7 @@ class _LoginPagesState extends State<LoginPages> {
     });
 
     try {
+      // URL sudah benar karena mengambil dari config/api.dart
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {'Accept': 'application/json'},
@@ -43,23 +46,17 @@ class _LoginPagesState extends State<LoginPages> {
         },
       );
 
-      print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
+      print('Login Status Code: ${response.statusCode}');
+      print('Login Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body)['data'];
-        final accessToken = data['access_token'];
-        final user =
-            data['User']; // ✅ 2. Sesuaikan dengan respon API (user lowercase)
-
-        // TODO: Simpan access_token dengan aman (misal: flutter_secure_storage)
+        // Pastikan key dari API Anda adalah 'user', bukan 'User'
+        final user = data;
 
         if (mounted) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              // ✅ 3. Arahkan ke MainPage dan kirim data user
-              builder: (context) => MainPage(user: user),
-            ),
+            MaterialPageRoute(builder: (context) => MainPage(user: user)),
           );
         }
       } else {
@@ -157,8 +154,13 @@ class _LoginPagesState extends State<LoginPages> {
                         text: 'Masuk',
                         onPressed: _isLoading ? null : _loginUser,
                         child: _isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                ),
                               )
                             : null,
                       ),
@@ -180,7 +182,7 @@ class _LoginPagesState extends State<LoginPages> {
     );
   }
 
-  // --- WIDGET BUILDER METHODS (Tidak ada perubahan di sini) ---
+  // --- WIDGET BUILDER METHODS ---
 
   Widget _buildLoginTabs() {
     return Container(
@@ -253,6 +255,9 @@ class _LoginPagesState extends State<LoginPages> {
           validator: (value) {
             if (value == null || value.isEmpty) {
               return '$label tidak boleh kosong';
+            }
+            if (label == 'Email' && !value.contains('@')) {
+              return 'Format email tidak valid';
             }
             return null;
           },
