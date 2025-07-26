@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:terraserve_app/pages/intro_pages2.dart'; // Import halaman berikutnya
+import 'package:terraserve_app/pages/intro_pages2.dart';
 
 class IntroPages extends StatefulWidget {
   const IntroPages({super.key});
@@ -18,7 +18,9 @@ class _IntroPagesState extends State<IntroPages> {
         onTap: () {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const IntroPages2()),
+            MaterialPageRoute(
+              builder: (context) => const IntroPages2(),
+            ),
           );
         },
         child: Stack(
@@ -43,7 +45,11 @@ class _IntroPagesState extends State<IntroPages> {
                     fit: BoxFit.fill,
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 60, left: 24, right: 24),
+                    padding: const EdgeInsets.only(
+                      top: 60,
+                      left: 24,
+                      right: 24,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -78,11 +84,21 @@ class _IntroPagesState extends State<IntroPages> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/images/Ellipse 1.png', height: 8),
+                  Image.asset(
+                    'assets/images/Ellipse 1.png',
+                    height: 8,
+                  ),
                   const SizedBox(width: 6),
-                  Image.asset('assets/images/Rectangle 3.png', height: 8, width: 27),
+                  Image.asset(
+                    'assets/images/Rectangle 3.png',
+                    height: 8,
+                    width: 27,
+                  ),
                   const SizedBox(width: 6),
-                  Image.asset('assets/images/Ellipse 2.png', height: 8),
+                  Image.asset(
+                    'assets/images/Ellipse 2.png',
+                    height: 8,
+                  ),
                 ],
               ),
             ),

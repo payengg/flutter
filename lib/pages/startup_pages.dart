@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:terraserve_app/pages/intro_pages.dart'; // Import halaman intro
+import 'package:terraserve_app/pages/intro_pages.dart';
 
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
@@ -17,7 +17,9 @@ class _StartupPageState extends State<StartupPage> {
         onTap: () {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const IntroPages()),
+            MaterialPageRoute(
+              builder: (context) => const IntroPages(),
+            ),
           );
         },
         child: Stack(
@@ -35,10 +37,15 @@ class _StartupPageState extends State<StartupPage> {
               child: Container(
                 height: MediaQuery.of(context).size.height * 0.4,
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(32),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
