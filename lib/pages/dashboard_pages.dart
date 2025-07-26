@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:terraserve_app/pages/models/banner_model.dart';
 import 'package:terraserve_app/pages/models/product_category_model.dart';
 import 'package:terraserve_app/pages/models/product_model.dart';
+import 'package:terraserve_app/pages/services/banner_service.dart';
 import 'package:terraserve_app/pages/services/product_category_service.dart';
 import 'package:terraserve_app/pages/services/product_service.dart';
+
+// Helper function untuk mengubah Hex String dari API menjadi Color
+Color hexToColor(String code) {
+  if (code.length == 7 && code.startsWith('#')) {
+    return Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
+  }
+  return Colors.grey; // Fallback color
+}
 
 class DashboardPages extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -18,14 +28,14 @@ class DashboardPages extends StatefulWidget {
 class _DashboardPagesState extends State<DashboardPages> {
   String _selectedCategory = 'All';
 
-  // --- Menggunakan Model, bukan Map ---
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
   List<ProductCategory> _categories = [];
+  List<BannerModel> _banners = [];
 
-  // --- State untuk Loading ---
   bool _isProductsLoading = true;
   bool _isCategoriesLoading = true;
+  bool _isBannersLoading = true;
 
   @override
   void initState() {
@@ -33,9 +43,8 @@ class _DashboardPagesState extends State<DashboardPages> {
     fetchData();
   }
 
-  // --- Fungsi untuk mengambil semua data dari server ---
   Future<void> fetchData() async {
-    await Future.wait([fetchProducts(), fetchCategories()]);
+    await Future.wait([fetchProducts(), fetchCategories(), fetchBanners()]);
   }
 
   Future<void> fetchProducts() async {
@@ -49,10 +58,8 @@ class _DashboardPagesState extends State<DashboardPages> {
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() => _isProductsLoading = false);
-        print('Error fetching products: $e');
-      }
+      if (mounted) setState(() => _isProductsLoading = false);
+      print('Error fetching products: $e');
     }
   }
 
@@ -66,14 +73,26 @@ class _DashboardPagesState extends State<DashboardPages> {
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() => _isCategoriesLoading = false);
-        print('Error fetching categories: $e');
-      }
+      if (mounted) setState(() => _isCategoriesLoading = false);
+      print('Error fetching categories: $e');
     }
   }
 
-  // --- Fungsi filter yang sudah disesuaikan ---
+  Future<void> fetchBanners() async {
+    try {
+      final result = await BannerService().getBanners();
+      if (mounted) {
+        setState(() {
+          _banners = result;
+          _isBannersLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isBannersLoading = false);
+      print('Error fetching banners: $e');
+    }
+  }
+
   void _filterProducts(String categoryName) {
     setState(() {
       _selectedCategory = categoryName;
@@ -104,7 +123,6 @@ class _DashboardPagesState extends State<DashboardPages> {
             _buildPromoBanner(),
             _buildSearchBar(),
             _buildCategorySection(),
-            // --- Menampilkan loading atau data ---
             _isProductsLoading
                 ? const Center(
                     heightFactor: 5,
@@ -180,6 +198,55 @@ class _DashboardPagesState extends State<DashboardPages> {
   }
 
   Widget _buildPromoBanner() {
+    if (_isBannersLoading) {
+      return Padding(
+        padding: const EdgeInsets.only(
+          top: 30.0,
+          left: 16.0,
+          right: 16.0,
+          bottom: 16.0,
+        ),
+        child: Container(
+          height: 150,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      );
+    }
+
+    if (_banners.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final banner = _banners.first;
+
+    BoxDecoration bannerDecoration;
+    if (banner.gradientEndColor == null) {
+      bannerDecoration = BoxDecoration(
+        color: hexToColor(banner.gradientStartColor),
+        borderRadius: BorderRadius.circular(20),
+      );
+    } else {
+      List<Color> gradientColors = [
+        hexToColor(banner.gradientStartColor),
+        if (banner.gradientMiddleColor != null)
+          hexToColor(banner.gradientMiddleColor!),
+        hexToColor(banner.gradientEndColor!),
+      ];
+      bannerDecoration = BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors,
+          // --- PERUBAHAN DI SINI ---
+          begin: Alignment.bottomCenter, // Dari bawah
+          end: Alignment.topCenter, // Ke atas
+        ),
+        borderRadius: BorderRadius.circular(20),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(
         top: 30.0,
@@ -194,17 +261,14 @@ class _DashboardPagesState extends State<DashboardPages> {
           Container(
             height: 150,
             width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFF859F3D),
-              borderRadius: BorderRadius.circular(20),
-            ),
+            decoration: bannerDecoration,
             child: Padding(
               padding: const EdgeInsets.only(left: 24, top: 20, right: 140),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Belanja Lebih Cerdas,\nHemat Lebih Banyak!',
+                    banner.title.replaceAll('\\n', '\n'),
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 16,
@@ -229,7 +293,7 @@ class _DashboardPagesState extends State<DashboardPages> {
                       ),
                     ),
                     child: Text(
-                      'Diskon 40%',
+                      banner.description,
                       style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -241,10 +305,28 @@ class _DashboardPagesState extends State<DashboardPages> {
           Positioned(
             right: 5,
             top: -60,
-            child: Image.asset(
-              'assets/images/banner.png',
+            child: Image.network(
+              banner.imageUrl,
               height: 210,
               fit: BoxFit.contain,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return SizedBox(
+                  height: 210,
+                  width: 150,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) =>
+                  const SizedBox(height: 210, width: 150),
             ),
           ),
         ],
@@ -347,7 +429,6 @@ class _DashboardPagesState extends State<DashboardPages> {
                   color: const Color(0xFFF0F4E8),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                // --- Menampilkan ikon dari network atau asset ---
                 child: (category.iconUrl ?? '').isEmpty
                     ? const Icon(Icons.category, color: Colors.grey)
                     : category.id == 0
@@ -396,7 +477,6 @@ class _DashboardPagesState extends State<DashboardPages> {
           final itemWidth = (screenWidth - 16 - 16 - 16) / 2;
           return SizedBox(
             width: itemWidth,
-            // --- Mengirim objek Product ke ProductCard ---
             child: ProductCard(product: product),
           );
         }).toList(),
@@ -406,7 +486,6 @@ class _DashboardPagesState extends State<DashboardPages> {
 }
 
 class ProductCard extends StatefulWidget {
-  // --- Menerima objek Product ---
   final Product product;
 
   const ProductCard({super.key, required this.product});
@@ -449,7 +528,6 @@ class _ProductCardState extends State<ProductCard> {
                   topLeft: Radius.circular(15),
                   topRight: Radius.circular(15),
                 ),
-                // --- Menampilkan gambar dari network ---
                 image: widget.product.galleries.isNotEmpty
                     ? DecorationImage(
                         image: NetworkImage(widget.product.galleries.first),
