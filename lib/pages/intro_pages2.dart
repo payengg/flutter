@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:terraserve_app/pages/login_pages.dart'; // ✅ Import halaman login
+import 'package:terraserve_app/pages/login_pages.dart';
 
 class IntroPages2 extends StatelessWidget {
   const IntroPages2({super.key});
@@ -11,23 +11,20 @@ class IntroPages2 extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // --- BAGIAN ATAS: KONTEN (LOGO, TEKS, TOMBOL) ---
+          // Bagian atas: konten teks & tombol
           Expanded(
-            flex: 5, // Memberi ruang lebih untuk konten teks
+            flex: 5,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 80, 24, 20),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo
                   Image.asset(
                     'assets/images/logo_terraserve.png',
                     width: 45,
                     height: 47.31,
                   ),
                   const SizedBox(height: 32),
-
-                  // Judul
                   Text(
                     'Hasil Panen Segar, Langsung dari Petani ke Rumah Anda',
                     textAlign: TextAlign.center,
@@ -38,8 +35,6 @@ class IntroPages2 extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Subjudul
                   Text(
                     'Belanja sayur, buah, dan bahan segar kini lebih mudah dan terpercaya.',
                     textAlign: TextAlign.center,
@@ -49,8 +44,6 @@ class IntroPages2 extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 40),
-
-                  // Tombol Belanja Sekarang
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -58,7 +51,9 @@ class IntroPages2 extends StatelessWidget {
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const LoginPages()),
+                          MaterialPageRoute(
+                            builder: (context) => const LoginPages(),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -82,9 +77,9 @@ class IntroPages2 extends StatelessWidget {
             ),
           ),
 
-          // --- BAGIAN BAWAH: GAMBAR SAYUR ---
+          // Bagian bawah: gambar
           Expanded(
-            flex: 4, // Proporsi untuk gambar
+            flex: 4,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -104,7 +99,11 @@ class IntroPages2 extends StatelessWidget {
                       const SizedBox(width: 6),
                       Image.asset('assets/images/Ellipse 2.png', height: 8),
                       const SizedBox(width: 6),
-                      Image.asset('assets/images/Rectangle 3.png', height: 8, width: 27),
+                      Image.asset(
+                        'assets/images/Rectangle 3.png',
+                        height: 8,
+                        width: 27,
+                      ),
                     ],
                   ),
                 ),
