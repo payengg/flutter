@@ -42,16 +42,17 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
     });
   }
 
+  // --- Fungsi untuk mengambil semua data dari server ---
   Future<void> _fetchData() async {
     await Future.wait([_fetchCategories(), _fetchBanners()]);
   }
 
   Future<void> _fetchCategories() async {
     try {
-      final result = await ProductCategoryService().getCategories();
+      // Menggunakan fungsi service yang benar (getAllCategories)
+      final result = await ProductCategoryService().getAllCategories();
       if (mounted) {
         setState(() {
-          result.removeWhere((category) => category.name == 'All');
           _categories = result;
           _isLoadingCategories = false;
         });
@@ -131,8 +132,11 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
               const SizedBox(height: 5),
               _isLoadingCategories
                   ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF859F3D),
+                      child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF859F3D),
+                        ),
                       ),
                     )
                   : _buildCategoryGrid(),
@@ -224,15 +228,13 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
       borderRadius: BorderRadius.circular(20),
       child: Container(
         height: 150,
-        decoration: BoxDecoration(
-          color: hexToColor(banner.backgroundColor),
-        ),
+        decoration: BoxDecoration(color: hexToColor(banner.backgroundColor)),
         child: Stack(
           children: [
             Positioned.fill(
               right: 100,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16), // Padding disesuaikan
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -240,7 +242,6 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
                     Text(
                       banner.title.replaceAll('\\n', '\n'),
                       style: GoogleFonts.poppins(
-                        // ✅ STYLING: Disesuaikan menjadi medium-bold (w600)
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                         color: mainTextColor,
@@ -252,14 +253,13 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
                     Text(
                       banner.description,
                       style: GoogleFonts.poppins(
-                        // ✅ STYLING: Ukuran 16 dan tidak bold
                         fontSize: 12,
                         color: mainTextColor.withOpacity(0.85),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const Spacer(), // Mendorong tombol ke bawah
+                    const Spacer(),
                     ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
@@ -309,11 +309,36 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   }
 
   Widget _buildCategoryGrid() {
+    List<Widget> categoryCards = [];
+
+    for (var category in _categories) {
+      if (category.subCategories.isNotEmpty) {
+        for (var subCategory in category.subCategories) {
+          categoryCards.add(
+            _buildCategoryCard(
+              name: subCategory.name,
+              imageUrl: subCategory.imageUrl,
+              index: categoryCards.length,
+            ),
+          );
+        }
+      } else {
+        categoryCards.add(
+          _buildCategoryCard(
+            name: category.name,
+            imageUrl:
+                category.imageUrl ?? '', // Gunakan imageUrl, bukan iconUrl
+            index: categoryCards.length,
+          ),
+        );
+      }
+    }
+
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: _categories.length,
+      itemCount: categoryCards.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 16,
@@ -321,12 +346,16 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
         childAspectRatio: 1.0,
       ),
       itemBuilder: (context, index) {
-        return _buildCategoryCard(_categories[index], index);
+        return categoryCards[index];
       },
     );
   }
 
-  Widget _buildCategoryCard(ProductCategory category, int index) {
+  Widget _buildCategoryCard({
+    required String name,
+    required String imageUrl,
+    required int index,
+  }) {
     final bool isLeftCard = index % 2 == 0;
     final String backgroundImage = isLeftCard
         ? 'assets/images/background_categories_left.png'
@@ -334,7 +363,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
 
     return InkWell(
       onTap: () {
-        print('${category.name} category clicked');
+        print('$name category clicked');
       },
       customBorder: RoundedRectangleBorder(
         borderRadius: isLeftCard
@@ -359,11 +388,10 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
                 SizedBox(
                   height: 100,
                   width: 100,
-                  child: (category.imageUrl ?? '').isEmpty
-                      ? const Icon(Icons.category,
-                          color: Colors.grey, size: 50)
+                  child: imageUrl.isEmpty
+                      ? const Icon(Icons.category, color: Colors.grey, size: 50)
                       : Image.network(
-                          category.imageUrl!,
+                          imageUrl,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(Icons.error),
@@ -372,7 +400,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    category.name,
+                    name,
                     style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                   ),
                 ),

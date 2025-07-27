@@ -65,8 +65,12 @@ class _DashboardPagesState extends State<DashboardPages> {
   }
 
   Future<void> fetchCategories() async {
+    setState(() {
+      _isCategoriesLoading = true;
+    });
     try {
-      final result = await ProductCategoryService().getCategories();
+      // ✅ Panggil fungsi yang benar untuk dashboard
+      final result = await ProductCategoryService().getCategoriesForDashboard();
       if (mounted) {
         setState(() {
           _categories = result;
@@ -74,8 +78,12 @@ class _DashboardPagesState extends State<DashboardPages> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _isCategoriesLoading = false);
-      print('Error fetching categories: $e');
+      if (mounted) {
+        setState(() {
+          _isCategoriesLoading = false;
+        });
+        print('Error fetching categories: $e');
+      }
     }
   }
 
