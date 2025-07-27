@@ -43,16 +43,17 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
     });
   }
 
+  // --- Fungsi untuk mengambil semua data dari server ---
   Future<void> _fetchData() async {
     await Future.wait([_fetchCategories(), _fetchBanners()]);
   }
 
   Future<void> _fetchCategories() async {
     try {
-      final result = await ProductCategoryService().getCategories();
+      // Menggunakan fungsi service yang benar (getAllCategories)
+      final result = await ProductCategoryService().getAllCategories();
       if (mounted) {
         setState(() {
-          result.removeWhere((category) => category.name == 'All');
           _categories = result;
           _isLoadingCategories = false;
         });
@@ -104,26 +105,59 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
           style: GoogleFonts.poppins(
             color: Colors.black,
             fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildPromoSlider(),
-            const SizedBox(height: 24),
-            Text(
-              'Silakan pilih kategori',
-              style: GoogleFonts.poppins(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 16),
-            _isLoadingCategories
-                ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF859F3D)),
-                  )
-                : _buildCategoryGrid(),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 30),
+              _buildPromoSlider(),
+              const SizedBox(height: 0),
+              _buildHandle(),
+              const SizedBox(height: 0),
+              Center(
+                child: Text(
+                  'Silakan pilih kategori',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5),
+              _isLoadingCategories
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF859F3D),
+                        ),
+                      ),
+                    )
+                  : _buildCategoryGrid(),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHandle() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        width: 40,
+        height: 4,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
     );
@@ -132,9 +166,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   Widget _buildPromoSlider() {
     if (_isLoadingBanners) {
       return Container(
-        margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
         height: 150,
-        width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(20),
@@ -149,7 +181,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
     return Column(
       children: [
         SizedBox(
-          height: 150,
+          height: 160,
           child: PageView.builder(
             controller: _pageController,
             itemCount: _banners.length,
@@ -179,100 +211,133 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   }
 
   Widget _buildSinglePromoBanner(CategoryBannerModel banner) {
-    // Menentukan warna teks utama, dengan fallback ke warna putih.
     final Color mainTextColor = banner.titleTextColor != null
         ? hexToColor(banner.titleTextColor!)
+        : Colors.black;
+
+    final Color buttonBgColor = banner.buttonBackgroundColor != null
+        ? hexToColor(banner.buttonBackgroundColor!)
         : Colors.white;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(color: hexToColor(banner.backgroundColor)),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        banner.title.replaceAll('\\n', '\n'),
+    final Color buttonTextColor = banner.buttonTextColor != null
+        ? hexToColor(banner.buttonTextColor!)
+        : Colors.black;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 150,
+        decoration: BoxDecoration(color: hexToColor(banner.backgroundColor)),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              right: 100,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      banner.title.replaceAll('\\n', '\n'),
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: mainTextColor,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      banner.description,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: mainTextColor.withOpacity(0.85),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: buttonBgColor,
+                        foregroundColor: buttonTextColor,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 20,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Text(
+                        banner.buttonText,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          color: mainTextColor,
+                          fontSize: 14,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        banner.description,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: mainTextColor.withOpacity(0.85),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: banner.buttonBackgroundColor != null
-                              ? hexToColor(banner.buttonBackgroundColor!)
-                              : Colors.white,
-                          foregroundColor: banner.buttonTextColor != null
-                              ? hexToColor(banner.buttonTextColor!)
-                              : Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 24,
-                          ),
-                        ),
-                        child: Text(
-                          banner.buttonText,
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: SizedBox(
+                width: 130,
+                height: 155,
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Image.network(
+                    banner.imageUrl,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const SizedBox.shrink();
+                    },
                   ),
                 ),
               ),
-              Positioned(
-                right: -10,
-                bottom: -10,
-                child: Image.network(
-                  banner.imageUrl,
-                  width: 117,
-                  height: 138,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    print(
-                      'Error loading banner image: ${banner.imageUrl}, Error: $error',
-                    );
-                    return const SizedBox(width: 117, height: 138);
-                  },
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildCategoryGrid() {
+    List<Widget> categoryCards = [];
+
+    for (var category in _categories) {
+      if (category.subCategories.isNotEmpty) {
+        for (var subCategory in category.subCategories) {
+          categoryCards.add(
+            _buildCategoryCard(
+              name: subCategory.name,
+              imageUrl: subCategory.imageUrl,
+              index: categoryCards.length,
+            ),
+          );
+        }
+      } else {
+        categoryCards.add(
+          _buildCategoryCard(
+            name: category.name,
+            imageUrl:
+                category.imageUrl ?? '', // Gunakan imageUrl, bukan iconUrl
+            index: categoryCards.length,
+          ),
+        );
+      }
+    }
+
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: _categories.length,
+      itemCount: categoryCards.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 16,
@@ -280,21 +345,24 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
         childAspectRatio: 1.0,
       ),
       itemBuilder: (context, index) {
-        return _buildCategoryCard(_categories[index], index);
+        return categoryCards[index];
       },
     );
   }
 
-  Widget _buildCategoryCard(ProductCategory category, int index) {
+  Widget _buildCategoryCard({
+    required String name,
+    required String imageUrl,
+    required int index,
+  }) {
     final bool isLeftCard = index % 2 == 0;
-
     final String backgroundImage = isLeftCard
         ? 'assets/images/background_categories_left.png'
         : 'assets/images/background_categories_right.png';
 
     return InkWell(
       onTap: () {
-        print('${category.name} category clicked');
+        print('$name category clicked');
       },
       customBorder: RoundedRectangleBorder(
         borderRadius: isLeftCard
@@ -319,12 +387,10 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
                 SizedBox(
                   height: 100,
                   width: 100,
-                  // --- ✅ PERUBAHAN DI SINI ---
-                  child: (category.imageUrl ?? '').isEmpty
+                  child: imageUrl.isEmpty
                       ? const Icon(Icons.category, color: Colors.grey, size: 50)
                       : Image.network(
-                          category
-                              .imageUrl!, // Menggunakan imageUrl, bukan iconUrl
+                          imageUrl,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(Icons.error),
@@ -333,7 +399,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    category.name,
+                    name,
                     style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                   ),
                 ),
