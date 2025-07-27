@@ -5,7 +5,8 @@ class Product {
   final String name;
   final String category;
   final double price;
-  final String? unit; // JSON Anda tidak punya 'unit', jadi buat nullable
+  final String? unit;
+  final String? description; // JSON Anda tidak punya 'unit', jadi buat nullable
   final String?
   discount; // JSON Anda tidak punya 'discount', jadi buat nullable
   final List<String> galleries;
@@ -16,6 +17,7 @@ class Product {
     required this.category,
     required this.price,
     this.unit,
+    this.description,
     this.discount,
     required this.galleries,
   });

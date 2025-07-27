@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:terraserve_app/pages/category_products_page.dart';
 import 'package:terraserve_app/pages/models/banner_model.dart';
 import 'package:terraserve_app/pages/models/product_category_model.dart';
 import 'package:terraserve_app/pages/models/product_model.dart';
+import 'package:terraserve_app/pages/product_detail_page.dart';
+import 'package:terraserve_app/pages/search_page.dart';
 import 'package:terraserve_app/pages/services/banner_service.dart';
 import 'package:terraserve_app/pages/services/product_category_service.dart';
 import 'package:terraserve_app/pages/services/product_service.dart';
 import 'package:terraserve_app/pages/all_categories_page.dart';
+import 'package:terraserve_app/pages/widgets/product_card.dart';
 
-// ✅ FUNGSI YANG HILANG DITAMBAHKAN DI SINI
 Color hexToColor(String code) {
   if (code.length == 7 && code.startsWith('#')) {
     return Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
   }
-  return Colors.grey; // Fallback color
+  return Colors.grey;
 }
 
 class DashboardPages extends StatefulWidget {
@@ -27,9 +30,11 @@ class DashboardPages extends StatefulWidget {
 }
 
 class _DashboardPagesState extends State<DashboardPages> {
+  // ✅ DIKEMBALIKAN: State untuk melacak kategori yang dipilih
   String _selectedCategory = 'All';
 
   List<Product> _products = [];
+  // ✅ DIKEMBALIKAN: State untuk menampung produk yang sudah difilter
   List<Product> _filteredProducts = [];
   List<ProductCategory> _categories = [];
   List<BannerModel> _banners = [];
@@ -54,6 +59,7 @@ class _DashboardPagesState extends State<DashboardPages> {
       if (mounted) {
         setState(() {
           _products = result;
+          // ✅ DIKEMBALIKAN: Awalnya, tampilkan semua produk
           _filteredProducts = result;
           _isProductsLoading = false;
         });
@@ -69,7 +75,6 @@ class _DashboardPagesState extends State<DashboardPages> {
       _isCategoriesLoading = true;
     });
     try {
-      // ✅ Panggil fungsi yang benar untuk dashboard
       final result = await ProductCategoryService().getCategoriesForDashboard();
       if (mounted) {
         setState(() {
@@ -102,6 +107,7 @@ class _DashboardPagesState extends State<DashboardPages> {
     }
   }
 
+  // ✅ DIKEMBALIKAN: Fungsi untuk memfilter produk berdasarkan nama kategori
   void _filterProducts(String categoryName) {
     setState(() {
       _selectedCategory = categoryName;
@@ -137,6 +143,7 @@ class _DashboardPagesState extends State<DashboardPages> {
                     heightFactor: 5,
                     child: CircularProgressIndicator(color: Color(0xFF859F3D)),
                   )
+                // ✅ DIKEMBALIKAN: Gunakan list _filteredProducts
                 : _buildProductGrid(),
           ],
         ),
@@ -209,12 +216,7 @@ class _DashboardPagesState extends State<DashboardPages> {
   Widget _buildPromoBanner() {
     if (_isBannersLoading) {
       return Padding(
-        padding: const EdgeInsets.only(
-          top: 30.0,
-          left: 16.0,
-          right: 16.0,
-          bottom: 16.0,
-        ),
+        padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
         child: Container(
           height: 150,
           width: double.infinity,
@@ -225,13 +227,10 @@ class _DashboardPagesState extends State<DashboardPages> {
         ),
       );
     }
-
     if (_banners.isEmpty) {
       return const SizedBox.shrink();
     }
-
     final banner = _banners.first;
-
     BoxDecoration bannerDecoration;
     if (banner.gradientEndColor == null) {
       bannerDecoration = BoxDecoration(
@@ -254,14 +253,8 @@ class _DashboardPagesState extends State<DashboardPages> {
         borderRadius: BorderRadius.circular(20),
       );
     }
-
     return Padding(
-      padding: const EdgeInsets.only(
-        top: 30.0,
-        left: 16.0,
-        right: 16.0,
-        bottom: 16.0,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,
@@ -317,22 +310,6 @@ class _DashboardPagesState extends State<DashboardPages> {
               banner.imageUrl,
               height: 210,
               fit: BoxFit.contain,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return SizedBox(
-                  height: 210,
-                  width: 150,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                          : null,
-                    ),
-                  ),
-                );
-              },
               errorBuilder: (context, error, stackTrace) =>
                   const SizedBox(height: 210, width: 150),
             ),
@@ -345,16 +322,27 @@ class _DashboardPagesState extends State<DashboardPages> {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Cari sayur, buah, atau lainnya...',
-          hintStyle: GoogleFonts.poppins(color: Colors.grey),
-          prefixIcon: const Icon(Icons.search, color: Colors.grey),
-          filled: true,
-          fillColor: Colors.grey[200],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SearchPage()),
+          );
+        },
+        child: AbsorbPointer(
+          child: TextField(
+            enabled: false,
+            decoration: InputDecoration(
+              hintText: 'Cari sayur, buah, atau lainnya...',
+              hintStyle: GoogleFonts.poppins(color: Colors.grey),
+              suffixIcon: const Icon(Icons.search, color: Colors.grey),
+              filled: true,
+              fillColor: Colors.grey[200],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
           ),
         ),
       ),
@@ -430,42 +418,46 @@ class _DashboardPagesState extends State<DashboardPages> {
     return GestureDetector(
       onTap: () => _filterProducts(category.name),
       child: Container(
-        width: 75,
+        width: 85,
         margin: const EdgeInsets.only(right: 8.0),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                height: 70,
-                width: 70,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0F4E8),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: (category.iconUrl ?? '').isEmpty
-                    ? const Icon(Icons.category, color: Colors.grey)
-                    : category.id == 0
-                    ? Image.asset(category.iconUrl!)
-                    : Image.network(
-                        category.iconUrl!,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.error, color: Colors.red),
-                      ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 70,
+              width: 70,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                // ✅ PERUBAHAN: Warna latar belakang dibuat statis (tidak berubah saat diklik)
+                color: const Color(0xFFF0F4E8),
+                borderRadius: BorderRadius.circular(15),
               ),
-              const SizedBox(height: 8),
-              Text(
+              child: (category.iconUrl ?? '').isEmpty
+                  ? const Icon(Icons.category, color: Colors.grey)
+                  : category.id == 0
+                      // ✅ PERUBAHAN: Warna ikon tidak lagi diubah
+                      ? Image.asset(category.iconUrl!)
+                      : Image.network(
+                          category.iconUrl!,
+                          // ✅ PERUBAHAN: Warna ikon tidak lagi diubah
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.error, color: Colors.red),
+                        ),
+            ),
+            const SizedBox(height: 8),
+            Flexible(
+              child: Text(
                 category.name,
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w600,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                   color: isSelected ? const Color(0xFF859F3D) : Colors.black,
                 ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
+                // ✅ 3. Menghapus overflow dan maxLines, lalu menambahkan perataan teks
+                textAlign: TextAlign.center,
+           ),
+            ),
+          ],
         ),
       ),
     );
@@ -487,187 +479,26 @@ class _DashboardPagesState extends State<DashboardPages> {
       child: Wrap(
         spacing: 16,
         runSpacing: 16,
+        // ✅ DIKEMBALIKAN: Gunakan _filteredProducts
         children: _filteredProducts.map((product) {
           final screenWidth = MediaQuery.of(context).size.width;
           final itemWidth = (screenWidth - 16 - 16 - 16) / 2;
-          return SizedBox(
-            width: itemWidth,
-            child: ProductCard(product: product),
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductDetailPage(product: product),
+                ),
+              );
+            },
+            child: SizedBox(
+              width: itemWidth,
+              child: ProductCard(product: product),
+            ),
           );
         }).toList(),
       ),
-    );
-  }
-}
-
-class ProductCard extends StatefulWidget {
-  final Product product;
-
-  const ProductCard({super.key, required this.product});
-
-  @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  int _quantity = 0;
-
-  void _increment() => setState(() => _quantity++);
-  void _decrement() => setState(() {
-    if (_quantity > 0) _quantity--;
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.grey[200]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(15),
-                  topRight: Radius.circular(15),
-                ),
-                image: widget.product.galleries.isNotEmpty
-                    ? DecorationImage(
-                        image: NetworkImage(widget.product.galleries.first),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: widget.product.galleries.isEmpty
-                  ? const Center(
-                      child: Icon(
-                        Icons.image_not_supported,
-                        color: Colors.grey,
-                      ),
-                    )
-                  : null,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(6.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.product.name,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.product.unit ?? '',
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        'Rp ${widget.product.price.toStringAsFixed(0)}',
-                        style: GoogleFonts.poppins(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    _quantity == 0
-                        ? _buildAddButton()
-                        : _buildQuantityControls(),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAddButton() {
-    return Container(
-      height: 30,
-      width: 30,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0F4E8),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: IconButton(
-        padding: EdgeInsets.zero,
-        onPressed: _increment,
-        icon: Image.asset('assets/images/icon_tambah.png', height: 16),
-      ),
-    );
-  }
-
-  Widget _buildQuantityControls() {
-    return Row(
-      children: [
-        Container(
-          height: 30,
-          width: 30,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey[300]!),
-          ),
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            onPressed: _decrement,
-            icon: Image.asset('assets/images/icon_minus.png', height: 16),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Text(
-            '$_quantity',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-        ),
-        Container(
-          height: 30,
-          width: 30,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF0F4E8),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            onPressed: _increment,
-            icon: Image.asset('assets/images/icon_tambah.png', height: 16),
-          ),
-        ),
-      ],
     );
   }
 }

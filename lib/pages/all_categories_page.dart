@@ -4,6 +4,7 @@ import 'package:terraserve_app/pages/models/category_banner_model.dart';
 import 'package:terraserve_app/pages/models/product_category_model.dart';
 import 'package:terraserve_app/pages/services/category_banner_service.dart';
 import 'package:terraserve_app/pages/services/product_category_service.dart';
+import 'package:terraserve_app/pages/category_products_page.dart';
 
 // Helper untuk hex color
 Color hexToColor(String code) {
@@ -49,7 +50,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
 
   Future<void> _fetchCategories() async {
     try {
-      // Menggunakan fungsi service yang benar (getAllCategories)
+      // ✅ PERBAIKAN: Menggunakan nama fungsi yang benar -> getAllCategories()
       final result = await ProductCategoryService().getAllCategories();
       if (mounted) {
         setState(() {
@@ -327,7 +328,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
           _buildCategoryCard(
             name: category.name,
             imageUrl:
-                category.imageUrl ?? '', // Gunakan imageUrl, bukan iconUrl
+                category.imageUrl ?? '',
             index: categoryCards.length,
           ),
         );
@@ -363,7 +364,12 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
 
     return InkWell(
       onTap: () {
-        print('$name category clicked');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategoryProductsPage(categoryName: name),
+          ),
+        );
       },
       customBorder: RoundedRectangleBorder(
         borderRadius: isLeftCard
