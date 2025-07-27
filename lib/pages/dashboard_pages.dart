@@ -6,8 +6,15 @@ import 'package:terraserve_app/pages/models/product_model.dart';
 import 'package:terraserve_app/pages/services/banner_service.dart';
 import 'package:terraserve_app/pages/services/product_category_service.dart';
 import 'package:terraserve_app/pages/services/product_service.dart';
-// ✅ PERUBAHAN: Mengimpor halaman all_categories_page
 import 'package:terraserve_app/pages/all_categories_page.dart';
+
+// ✅ FUNGSI YANG HILANG DITAMBAHKAN DI SINI
+Color hexToColor(String code) {
+  if (code.length == 7 && code.startsWith('#')) {
+    return Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
+  }
+  return Colors.grey; // Fallback color
+}
 
 class DashboardPages extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -233,9 +240,8 @@ class _DashboardPagesState extends State<DashboardPages> {
       bannerDecoration = BoxDecoration(
         gradient: LinearGradient(
           colors: gradientColors,
-          // --- PERUBAHAN DI SINI ---
-          begin: Alignment.bottomCenter, // Dari bawah
-          end: Alignment.topCenter, // Ke atas
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
         ),
         borderRadius: BorderRadius.circular(20),
       );
@@ -255,10 +261,7 @@ class _DashboardPagesState extends State<DashboardPages> {
           Container(
             height: 150,
             width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFF859F3D),
-              borderRadius: BorderRadius.circular(20),
-            ),
+            decoration: bannerDecoration,
             child: Padding(
               padding: const EdgeInsets.only(left: 24, top: 20, right: 140),
               child: Column(
@@ -290,7 +293,7 @@ class _DashboardPagesState extends State<DashboardPages> {
                       ),
                     ),
                     child: Text(
-                      'Diskon 40%',
+                      banner.description,
                       style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -366,7 +369,6 @@ class _DashboardPagesState extends State<DashboardPages> {
                 ),
               ),
               InkWell(
-                // ✅ PERUBAHAN: Menambahkan navigasi ke halaman AllCategoriesPage
                 onTap: () {
                   Navigator.push(
                     context,

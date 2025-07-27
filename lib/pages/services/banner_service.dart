@@ -5,7 +5,7 @@ import 'package:terraserve_app/pages/models/banner_model.dart';
 
 class BannerService {
   Future<List<BannerModel>> getBanners() async {
-    final url = Uri.parse('$baseUrl/banners');
+    final url = Uri.parse('$baseUrl/dashboard-banners');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
