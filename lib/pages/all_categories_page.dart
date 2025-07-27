@@ -76,14 +76,14 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
         child: Column(
           children: [
             _buildPromoSlider(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
             _buildHandle(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             Text(
               'Silakan pilih kategori',
               style: GoogleFonts.poppins(color: Colors.grey[600]),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 3),
             _buildCategoryGrid(),
           ],
         ),
@@ -258,7 +258,6 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
               fit: BoxFit.fill,
             ),
           ),
-          // ✅ PERUBAHAN: Membungkus Column dengan Center
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
