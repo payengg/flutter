@@ -5,12 +5,12 @@ import 'package:terraserve_app/pages/models/product_category_model.dart';
 import 'package:terraserve_app/pages/services/category_banner_service.dart';
 import 'package:terraserve_app/pages/services/product_category_service.dart';
 
-// Helper function untuk mengubah Hex String menjadi Color
+// Helper untuk hex color
 Color hexToColor(String code) {
   if (code.length == 7 && code.startsWith('#')) {
     return Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
   }
-  return Colors.grey; // Fallback color
+  return Colors.grey;
 }
 
 class AllCategoriesPage extends StatefulWidget {
@@ -24,7 +24,6 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  // --- State untuk data dinamis ---
   List<ProductCategory> _categories = [];
   List<CategoryBannerModel> _banners = [];
   bool _isLoadingCategories = true;
@@ -60,7 +59,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingCategories = false);
-        print('Error fetching all categories: $e');
+        print('Error fetching categories: $e');
       }
     }
   }
@@ -77,7 +76,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingBanners = false);
-        print('Error fetching category banners: $e');
+        print('Error fetching banners: $e');
       }
     }
   }
@@ -104,31 +103,56 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
           style: GoogleFonts.poppins(
             color: Colors.black,
             fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildPromoSlider(),
-            const SizedBox(height: 24),
-            const SizedBox(height: 10),
-            _buildHandle(),
-            const SizedBox(height: 10),
-            Text(
-              'Silakan pilih kategori',
-              style: GoogleFonts.poppins(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 16),
-            _isLoadingCategories
-                ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF859F3D)),
-                  )
-                : _buildCategoryGrid(),
-            const SizedBox(height: 3),
-            _buildCategoryGrid(),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 30),
+              _buildPromoSlider(),
+              const SizedBox(height: 0),
+              _buildHandle(),
+              const SizedBox(height: 0),
+              Center(
+                child: Text(
+                  'Silakan pilih kategori',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5),
+              _isLoadingCategories
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF859F3D),
+                      ),
+                    )
+                  : _buildCategoryGrid(),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHandle() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        width: 40,
+        height: 4,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
     );
@@ -137,9 +161,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   Widget _buildPromoSlider() {
     if (_isLoadingBanners) {
       return Container(
-        margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
         height: 150,
-        width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(20),
@@ -154,7 +176,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
     return Column(
       children: [
         SizedBox(
-          height: 150,
+          height: 160,
           child: PageView.builder(
             controller: _pageController,
             itemCount: _banners.length,
@@ -173,7 +195,9 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
               height: 8,
               width: _currentPage == index ? 24 : 8,
               decoration: BoxDecoration(
-                color: _currentPage == index ? Colors.black : Colors.grey[300],
+                color: _currentPage == index
+                    ? Colors.black
+                    : Colors.grey[300],
                 borderRadius: BorderRadius.circular(10),
               ),
             );
@@ -184,89 +208,101 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
   }
 
   Widget _buildSinglePromoBanner(CategoryBannerModel banner) {
-    // Menentukan warna teks utama, dengan fallback ke warna putih.
     final Color mainTextColor = banner.titleTextColor != null
         ? hexToColor(banner.titleTextColor!)
+        : Colors.black;
+
+    final Color buttonBgColor = banner.buttonBackgroundColor != null
+        ? hexToColor(banner.buttonBackgroundColor!)
         : Colors.white;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(color: hexToColor(banner.backgroundColor)),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        banner.title.replaceAll('\\n', '\n'),
+    final Color buttonTextColor = banner.buttonTextColor != null
+        ? hexToColor(banner.buttonTextColor!)
+        : Colors.black;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 150,
+        decoration: BoxDecoration(
+          color: hexToColor(banner.backgroundColor),
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              right: 100,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16), // Padding disesuaikan
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      banner.title.replaceAll('\\n', '\n'),
+                      style: GoogleFonts.poppins(
+                        // ✅ STYLING: Disesuaikan menjadi medium-bold (w600)
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: mainTextColor,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      banner.description,
+                      style: GoogleFonts.poppins(
+                        // ✅ STYLING: Ukuran 16 dan tidak bold
+                        fontSize: 12,
+                        color: mainTextColor.withOpacity(0.85),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Spacer(), // Mendorong tombol ke bawah
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: buttonBgColor,
+                        foregroundColor: buttonTextColor,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 20,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Text(
+                        banner.buttonText,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          color: mainTextColor,
+                          fontSize: 14,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        banner.description,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: mainTextColor.withOpacity(0.85),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: banner.buttonBackgroundColor != null
-                              ? hexToColor(banner.buttonBackgroundColor!)
-                              : Colors.white,
-                          foregroundColor: banner.buttonTextColor != null
-                              ? hexToColor(banner.buttonTextColor!)
-                              : Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 24,
-                          ),
-                        ),
-                        child: Text(
-                          banner.buttonText,
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: SizedBox(
+                width: 130,
+                height: 155,
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Image.network(
+                    banner.imageUrl,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const SizedBox.shrink();
+                    },
                   ),
                 ),
               ),
-              Positioned(
-                right: -10,
-                bottom: -10,
-                child: Image.network(
-                  banner.imageUrl,
-                  width: 117,
-                  height: 138,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    print(
-                      'Error loading banner image: ${banner.imageUrl}, Error: $error',
-                    );
-                    return const SizedBox(width: 117, height: 138);
-                  },
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -292,7 +328,6 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
 
   Widget _buildCategoryCard(ProductCategory category, int index) {
     final bool isLeftCard = index % 2 == 0;
-
     final String backgroundImage = isLeftCard
         ? 'assets/images/background_categories_left.png'
         : 'assets/images/background_categories_right.png';
@@ -324,12 +359,11 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
                 SizedBox(
                   height: 100,
                   width: 100,
-                  // --- ✅ PERUBAHAN DI SINI ---
                   child: (category.imageUrl ?? '').isEmpty
-                      ? const Icon(Icons.category, color: Colors.grey, size: 50)
+                      ? const Icon(Icons.category,
+                          color: Colors.grey, size: 50)
                       : Image.network(
-                          category
-                              .imageUrl!, // Menggunakan imageUrl, bukan iconUrl
+                          category.imageUrl!,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(Icons.error),
