@@ -15,6 +15,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int _quantity = 1;
   int _selectedImageIndex = 0;
 
+  // Controller untuk PageView gambar
+  late final PageController _pageController;
+
+  // --- ✅ PERBAIKAN DI SINI ---
+  // Menambahkan initState untuk menginisialisasi controller
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _increment() {
     setState(() {
       _quantity++;
@@ -42,6 +59,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _buildImageThumbnails(),
+                  const SizedBox(height: 16),
                   _buildProductInfo(),
                   const SizedBox(height: 24),
                   _buildDivider(),
@@ -55,7 +74,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   _buildSingleReview(),
                   const SizedBox(height: 24),
                   _buildViewAllReviewsButton(),
-                  const SizedBox(height: 100), // Ruang untuk tombol bawah
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
@@ -87,46 +106,90 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        background: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            SizedBox(
-              height: 250,
-              child: PageView.builder(
-                onPageChanged: (index) {
-                  setState(() {
-                    _selectedImageIndex = index;
-                  });
-                },
-                itemCount: widget.product.galleries.length,
-                itemBuilder: (context, index) {
-                  return Image.network(
-                    widget.product.galleries[index],
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.image_not_supported, size: 100, color: Colors.grey),
-                  );
-                },
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(widget.product.galleries.length, (index) {
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                  height: 8,
-                  width: _selectedImageIndex == index ? 24 : 8,
-                  decoration: BoxDecoration(
-                    color: _selectedImageIndex == index ? Colors.black : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                );
-              }),
-            ),
-          ],
+        background: SizedBox(
+          height: 300,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _selectedImageIndex = index;
+              });
+            },
+            itemCount: widget.product.galleries.length,
+            itemBuilder: (context, index) {
+              return Image.network(
+                widget.product.galleries[index],
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.image_not_supported,
+                  size: 100,
+                  color: Colors.grey,
+                ),
+              );
+            },
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImageThumbnails() {
+    return Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 60,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: widget.product.galleries.length,
+              itemBuilder: (context, index) {
+                bool isSelected = _selectedImageIndex == index;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedImageIndex = index;
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.only(right: 10),
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0xFF859F3D)
+                            : Colors.grey[300]!,
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        widget.product.galleries[index],
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        Text(
+          '120 Terjual',
+          style: GoogleFonts.poppins(
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 
@@ -136,10 +199,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       children: [
         Text(
           widget.product.name,
-          style: GoogleFonts.poppins(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Text(
@@ -153,18 +213,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         const SizedBox(height: 16),
         Text(
           'Detail Produk',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Text(
           widget.product.description ?? 'Tidak ada deskripsi untuk produk ini.',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: Colors.grey[700],
-          ),
+          style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
         ),
       ],
     );
@@ -183,17 +237,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Petani Yanti', // Ganti dengan nama petani dari data
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold,
-                ),
+                widget.product.seller?.name ?? 'Penjual Terpercaya',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
               ),
               Text(
-                'Lampung Selatan', // Ganti dengan lokasi petani
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+                'Lampung Selatan',
+                style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
@@ -201,7 +250,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         IconButton(
           onPressed: () {},
           icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF859F3D)),
-        )
+        ),
       ],
     );
   }
@@ -235,7 +284,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   style: GoogleFonts.poppins(color: Colors.grey),
                 ),
               ],
-            )
+            ),
           ],
         ),
         const Icon(Icons.keyboard_arrow_down),
@@ -271,7 +320,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12),
             ),
           ],
-        )
+        ),
       ],
     );
   }
@@ -305,7 +354,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 1,
             blurRadius: 10,
-          )
+          ),
         ],
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),

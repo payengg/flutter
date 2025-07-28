@@ -1,11 +1,8 @@
-// lib/pages/category_products_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:terraserve_app/pages/models/product_model.dart';
 import 'package:terraserve_app/pages/product_detail_page.dart';
 import 'package:terraserve_app/pages/services/product_service.dart';
-// ✅ 1. Import ProductCard dari file widget
 import 'package:terraserve_app/pages/widgets/product_card.dart';
 
 class CategoryProductsPage extends StatefulWidget {
@@ -45,9 +42,11 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
       if (mounted) {
         setState(() {
           _products = allProducts
-              .where((product) =>
-                  product.category?.trim().toLowerCase() ==
-                  widget.categoryName.trim().toLowerCase())
+              .where(
+                (product) =>
+                    product.category?.trim().toLowerCase() ==
+                    widget.categoryName.trim().toLowerCase(),
+              )
               .toList();
           _searchedProducts = List.from(_products);
           _isLoading = false;
@@ -56,7 +55,9 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        print('Error fetching products for category ${widget.categoryName}: $e');
+        print(
+          'Error fetching products for category ${widget.categoryName}: $e',
+        );
       }
     }
   }
@@ -98,8 +99,10 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
               suffixIcon: const Icon(Icons.search, color: Colors.grey),
               filled: true,
               fillColor: Colors.white,
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 12.0,
+                horizontal: 20.0,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(25),
                 borderSide: BorderSide.none,
@@ -109,17 +112,17 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF859F3D)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF859F3D)),
+            )
           : _searchedProducts.isEmpty
-              ? Center(
-                  child: Text(
-                    'Produk tidak ditemukan',
-                    style: GoogleFonts.poppins(color: Colors.grey),
-                  ),
-                )
-              : SingleChildScrollView(
-                  child: _buildProductGrid(),
-                ),
+          ? Center(
+              child: Text(
+                'Produk tidak ditemukan',
+                style: GoogleFonts.poppins(color: Colors.grey),
+              ),
+            )
+          : SingleChildScrollView(child: _buildProductGrid()),
     );
   }
 
@@ -143,7 +146,6 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
             },
             child: SizedBox(
               width: itemWidth,
-              // ✅ 2. Menggunakan ProductCard yang sudah terpusat
               child: ProductCard(product: product),
             ),
           );
@@ -152,5 +154,3 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
     );
   }
 }
-
-// ✅ 3. PASTIKAN SELURUH KODE ProductCard DI BAWAH INI SUDAH DIHAPUS DARI FILE INI

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:terraserve_app/pages/category_products_page.dart';
 import 'package:terraserve_app/pages/models/banner_model.dart';
 import 'package:terraserve_app/pages/models/product_category_model.dart';
 import 'package:terraserve_app/pages/models/product_model.dart';
@@ -30,11 +29,9 @@ class DashboardPages extends StatefulWidget {
 }
 
 class _DashboardPagesState extends State<DashboardPages> {
-  // ✅ DIKEMBALIKAN: State untuk melacak kategori yang dipilih
   String _selectedCategory = 'All';
 
   List<Product> _products = [];
-  // ✅ DIKEMBALIKAN: State untuk menampung produk yang sudah difilter
   List<Product> _filteredProducts = [];
   List<ProductCategory> _categories = [];
   List<BannerModel> _banners = [];
@@ -107,7 +104,6 @@ class _DashboardPagesState extends State<DashboardPages> {
     }
   }
 
-  // ✅ DIKEMBALIKAN: Fungsi untuk memfilter produk berdasarkan nama kategori
   void _filterProducts(String categoryName) {
     setState(() {
       _selectedCategory = categoryName;
@@ -143,7 +139,6 @@ class _DashboardPagesState extends State<DashboardPages> {
                     heightFactor: 5,
                     child: CircularProgressIndicator(color: Color(0xFF859F3D)),
                   )
-                // ✅ DIKEMBALIKAN: Gunakan list _filteredProducts
                 : _buildProductGrid(),
           ],
         ),
@@ -435,14 +430,14 @@ class _DashboardPagesState extends State<DashboardPages> {
               child: (category.iconUrl ?? '').isEmpty
                   ? const Icon(Icons.category, color: Colors.grey)
                   : category.id == 0
+                  // ✅ PERUBAHAN: Warna ikon tidak lagi diubah
+                  ? Image.asset(category.iconUrl!)
+                  : Image.network(
+                      category.iconUrl!,
                       // ✅ PERUBAHAN: Warna ikon tidak lagi diubah
-                      ? Image.asset(category.iconUrl!)
-                      : Image.network(
-                          category.iconUrl!,
-                          // ✅ PERUBAHAN: Warna ikon tidak lagi diubah
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.error, color: Colors.red),
-                        ),
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.error, color: Colors.red),
+                    ),
             ),
             const SizedBox(height: 8),
             Flexible(
@@ -455,7 +450,7 @@ class _DashboardPagesState extends State<DashboardPages> {
                 ),
                 // ✅ 3. Menghapus overflow dan maxLines, lalu menambahkan perataan teks
                 textAlign: TextAlign.center,
-           ),
+              ),
             ),
           ],
         ),
@@ -483,17 +478,18 @@ class _DashboardPagesState extends State<DashboardPages> {
         children: _filteredProducts.map((product) {
           final screenWidth = MediaQuery.of(context).size.width;
           final itemWidth = (screenWidth - 16 - 16 - 16) / 2;
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductDetailPage(product: product),
-                ),
-              );
-            },
-            child: SizedBox(
-              width: itemWidth,
+          return SizedBox(
+            width: itemWidth,
+            // ✅ BUNGKUS DENGAN INKWELL ATAU GESTUREDETECTOR
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailPage(product: product),
+                  ),
+                );
+              },
               child: ProductCard(product: product),
             ),
           );

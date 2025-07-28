@@ -200,9 +200,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
               height: 8,
               width: _currentPage == index ? 24 : 8,
               decoration: BoxDecoration(
-                color: _currentPage == index
-                    ? Colors.black
-                    : Colors.grey[300],
+                color: _currentPage == index ? Colors.black : Colors.grey[300],
                 borderRadius: BorderRadius.circular(10),
               ),
             );
@@ -327,8 +325,7 @@ class _AllCategoriesPageState extends State<AllCategoriesPage> {
         categoryCards.add(
           _buildCategoryCard(
             name: category.name,
-            imageUrl:
-                category.imageUrl ?? '',
+            imageUrl: category.imageUrl ?? '',
             index: categoryCards.length,
           ),
         );
