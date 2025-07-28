@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:terraserve_app/pages/cart_page.dart';
 import 'package:terraserve_app/pages/models/product_model.dart';
+import 'package:terraserve_app/pages/services/cart_service.dart';
+import 'package:terraserve_app/pages/services/favorite_service.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Product product;
@@ -12,14 +16,9 @@ class ProductDetailPage extends StatefulWidget {
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
-  int _quantity = 1;
   int _selectedImageIndex = 0;
-
-  // Controller untuk PageView gambar
   late final PageController _pageController;
 
-  // --- ✅ PERBAIKAN DI SINI ---
-  // Menambahkan initState untuk menginisialisasi controller
   @override
   void initState() {
     super.initState();
@@ -30,20 +29,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-  void _increment() {
-    setState(() {
-      _quantity++;
-    });
-  }
-
-  void _decrement() {
-    if (_quantity > 1) {
-      setState(() {
-        _quantity--;
-      });
-    }
   }
 
   @override
@@ -59,7 +44,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildImageThumbnails(),
                   const SizedBox(height: 16),
                   _buildProductInfo(),
                   const SizedBox(height: 24),
@@ -74,7 +58,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   _buildSingleReview(),
                   const SizedBox(height: 24),
                   _buildViewAllReviewsButton(),
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 120),
                 ],
               ),
             ),
@@ -86,6 +70,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget _buildSliverAppBar() {
+    final favoriteService = Provider.of<FavoriteService>(context);
+    final bool isFavorited = favoriteService.isFavorite(widget.product.id);
+
     return SliverAppBar(
       expandedHeight: 300.0,
       backgroundColor: Colors.white,
@@ -97,99 +84,69 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.favorite_border, color: Colors.black),
-          onPressed: () {},
+          icon: Icon(
+            isFavorited ? Icons.favorite : Icons.favorite_border,
+            color: isFavorited ? Colors.red : Colors.black,
+          ),
+          onPressed: () {
+            favoriteService.toggleFavorite(widget.product.id);
+          },
         ),
         IconButton(
           icon: const Icon(Icons.shopping_bag_outlined, color: Colors.black),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CartPage()),
+            );
+          },
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        background: SizedBox(
-          height: 300,
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _selectedImageIndex = index;
-              });
-            },
-            itemCount: widget.product.galleries.length,
-            itemBuilder: (context, index) {
-              return Image.network(
-                widget.product.galleries[index],
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => const Icon(
-                  Icons.image_not_supported,
-                  size: 100,
-                  color: Colors.grey,
+        background: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() {
+                    _selectedImageIndex = index;
+                  });
+                },
+                itemCount: widget.product.galleries.length,
+                itemBuilder: (context, index) {
+                  return Image.network(
+                    widget.product.galleries[index],
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.image_not_supported, size: 100, color: Colors.grey),
+                  );
+                },
+              ),
+            ),
+            if (widget.product.galleries.length > 1)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(widget.product.galleries.length, (index) {
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      height: 8,
+                      width: _selectedImageIndex == index ? 24 : 8,
+                      decoration: BoxDecoration(
+                        color: _selectedImageIndex == index ? Colors.black : Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    );
+                  }),
                 ),
-              );
-            },
-          ),
+              ),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildImageThumbnails() {
-    return Row(
-      children: [
-        Expanded(
-          child: SizedBox(
-            height: 60,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: widget.product.galleries.length,
-              itemBuilder: (context, index) {
-                bool isSelected = _selectedImageIndex == index;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedImageIndex = index;
-                      _pageController.animateToPage(
-                        index,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    });
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.only(right: 10),
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isSelected
-                            ? const Color(0xFF859F3D)
-                            : Colors.grey[300]!,
-                        width: 2,
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        widget.product.galleries[index],
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        Text(
-          '120 Terjual',
-          style: GoogleFonts.poppins(
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
     );
   }
 
@@ -217,7 +174,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
         const SizedBox(height: 8),
         Text(
-          widget.product.description ?? 'Tidak ada deskripsi untuk produk ini.',
+          widget.product.description?.replaceAll(RegExp(r'<[^>]*>'), '') ?? 'Tidak ada deskripsi untuk produk ini.',
           style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
         ),
       ],
@@ -237,7 +194,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.product.seller?.name ?? 'Penjual Terpercaya',
+                widget.product.seller?.name ?? 'Petani Yanti',
                 style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
               ),
               Text(
@@ -255,6 +212,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  // ✅ KODE DI BAWAH INI DIKEMBALIKAN SEPERTI SEMULA
   Widget _buildReviewsSection() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -316,7 +274,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Dexter, 27 Juli 2025',
+              'Dexter, 29 Juli 2025',
               style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12),
             ),
           ],
@@ -344,6 +302,131 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Divider(color: Colors.grey[200], thickness: 1);
   }
 
+  void _showVariantModalSheet(
+    BuildContext context, {
+    required String primaryActionText,
+    VoidCallback? onPrimaryAction,
+  }) {
+    int selectedVariantIndex = 0;
+    int selectedWeightIndex = 0;
+
+    final List<Map<String, dynamic>> variants = [
+      {'name': 'Bayam Hijau', 'icon': Icons.eco},
+      {'name': 'Bayam Merah', 'icon': Icons.local_florist},
+    ];
+    final List<String> weights = ['100 gr', '250 gr', '500 gr', '1 kg'];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(25), topRight: Radius.circular(25)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Pilih Varian', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+                    ],
+                  ),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  Text('Varian', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: List.generate(variants.length, (index) {
+                      bool isSelected = selectedVariantIndex == index;
+                      return GestureDetector(
+                        onTap: () => setModalState(() => selectedVariantIndex = index),
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 12),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFFF0F4E8) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: isSelected ? const Color(0xFF859F3D) : Colors.grey.shade300),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(variants[index]['icon'], size: 30),
+                              const SizedBox(height: 4),
+                              Text(variants[index]['name'], style: GoogleFonts.poppins(fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 24),
+                  Text('Berat', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: List.generate(weights.length, (index) {
+                      bool isSelected = selectedWeightIndex == index;
+                      return GestureDetector(
+                        onTap: () => setModalState(() => selectedWeightIndex = index),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFF859F3D) : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            weights[index],
+                            style: GoogleFonts.poppins(color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: () {
+                      final cartService = Provider.of<CartService>(context, listen: false);
+                      cartService.addToCart(widget.product);
+                      Navigator.of(context).pop();
+                      
+                      if (primaryActionText == 'Tambah ke Keranjang') {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${widget.product.name} ditambahkan ke keranjang!'),
+                            duration: const Duration(seconds: 1),
+                            backgroundColor: const Color(0xFF859F3D),
+                          ),
+                        );
+                      }
+                      
+                      onPrimaryAction?.call();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF859F3D),
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    ),
+                    child: Text(primaryActionText, style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildBottomSheet() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -354,43 +437,51 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 1,
             blurRadius: 10,
-          ),
+          )
         ],
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
       ),
       child: Row(
         children: [
           Container(
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
+              color: const Color(0xFF859F3D),
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.shopping_bag_outlined),
+              onPressed: () {
+                _showVariantModalSheet(
+                  context,
+                  primaryActionText: 'Tambah ke Keranjang',
+                );
+              },
+              icon: const Icon(Icons.shopping_bag_outlined, color: Colors.white), 
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                _showVariantModalSheet(
+                  context,
+                  primaryActionText: 'Beli Langsung',
+                  onPrimaryAction: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CartPage()),
+                    );
+                  },
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF859F3D),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
-                'Beli Langsung',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                'Beli Langsung Rp${widget.product.price.toStringAsFixed(0)}',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
           ),

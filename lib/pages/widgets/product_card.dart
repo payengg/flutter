@@ -2,26 +2,26 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:terraserve_app/pages/models/cart_item_model.dart';
 import 'package:terraserve_app/pages/models/product_model.dart';
+import 'package:terraserve_app/pages/services/cart_service.dart';
 
-class ProductCard extends StatefulWidget {
+class ProductCard extends StatelessWidget {
   final Product product;
   const ProductCard({super.key, required this.product});
 
   @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  int _quantity = 0;
-
-  void _increment() => setState(() => _quantity++);
-  void _decrement() => setState(() {
-    if (_quantity > 0) _quantity--;
-  });
-
-  @override
   Widget build(BuildContext context) {
+    final cartService = Provider.of<CartService>(context);
+    
+    // Cek apakah item ini sudah ada di keranjang dan berapa kuantitasnya
+    final itemInCart = cartService.items.firstWhere(
+      (item) => item.product.id == product.id,
+      orElse: () => CartItem(product: product, quantity: 0), 
+    );
+    final quantity = itemInCart.quantity;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -46,19 +46,16 @@ class _ProductCardState extends State<ProductCard> {
                   topLeft: Radius.circular(15),
                   topRight: Radius.circular(15),
                 ),
-                image: widget.product.galleries.isNotEmpty
+                image: product.galleries.isNotEmpty
                     ? DecorationImage(
-                        image: NetworkImage(widget.product.galleries.first),
+                        image: NetworkImage(product.galleries.first),
                         fit: BoxFit.cover,
                       )
                     : null,
               ),
-              child: widget.product.galleries.isEmpty
+              child: product.galleries.isEmpty
                   ? const Center(
-                      child: Icon(
-                        Icons.image_not_supported,
-                        color: Colors.grey,
-                      ),
+                      child: Icon(Icons.image_not_supported, color: Colors.grey),
                     )
                   : null,
             ),
@@ -69,21 +66,15 @@ class _ProductCardState extends State<ProductCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.product.name,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                  product.name,
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.product.unit ?? '',
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
+                  product.unit ?? '',
+                  style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 12),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -92,7 +83,7 @@ class _ProductCardState extends State<ProductCard> {
                   children: [
                     Flexible(
                       child: Text(
-                        'Rp${widget.product.price.toStringAsFixed(0)}',
+                        'Rp${product.price.toStringAsFixed(0)}',
                         style: GoogleFonts.poppins(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
@@ -101,9 +92,9 @@ class _ProductCardState extends State<ProductCard> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    _quantity == 0
-                        ? _buildAddButton()
-                        : _buildQuantityControls(),
+                    quantity == 0
+                        ? _buildAddButton(context, product)
+                        : _buildQuantityControls(context, itemInCart),
                   ],
                 ),
               ],
@@ -114,7 +105,8 @@ class _ProductCardState extends State<ProductCard> {
     );
   }
 
-  Widget _buildAddButton() {
+  Widget _buildAddButton(BuildContext context, Product product) {
+    final cartService = Provider.of<CartService>(context, listen: false);
     return Container(
       height: 30,
       width: 30,
@@ -124,13 +116,23 @@ class _ProductCardState extends State<ProductCard> {
       ),
       child: IconButton(
         padding: EdgeInsets.zero,
-        onPressed: _increment,
+        onPressed: () {
+          cartService.addToCart(product);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${product.name} ditambahkan ke keranjang!'),
+              duration: const Duration(seconds: 1),
+              backgroundColor: const Color(0xFF859F3D),
+            ),
+          );
+        },
         icon: Image.asset('assets/images/icon_tambah.png', height: 16),
       ),
     );
   }
 
-  Widget _buildQuantityControls() {
+  Widget _buildQuantityControls(BuildContext context, CartItem item) {
+    final cartService = Provider.of<CartService>(context, listen: false);
     return Row(
       children: [
         Container(
@@ -143,18 +145,15 @@ class _ProductCardState extends State<ProductCard> {
           ),
           child: IconButton(
             padding: EdgeInsets.zero,
-            onPressed: _decrement,
+            onPressed: () => cartService.decrementQuantity(item),
             icon: Image.asset('assets/images/icon_minus.png', height: 16),
           ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
           child: Text(
-            '$_quantity',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
+            '${item.quantity}',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
           ),
         ),
         Container(
@@ -166,7 +165,7 @@ class _ProductCardState extends State<ProductCard> {
           ),
           child: IconButton(
             padding: EdgeInsets.zero,
-            onPressed: _increment,
+            onPressed: () => cartService.incrementQuantity(item),
             icon: Image.asset('assets/images/icon_tambah.png', height: 16),
           ),
         ),

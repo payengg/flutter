@@ -1,7 +1,12 @@
+// lib/pages/main_page.dart
+
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart'; // Import ini diperlukan untuk ScrollDirection
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:terraserve_app/pages/Dashboard_Pages.dart';
+import 'package:terraserve_app/pages/akun_page.dart'; // ✅ 1. Impor AkunPage
+import 'package:terraserve_app/pages/dashboard_pages.dart';
+import 'package:terraserve_app/pages/favorit_page.dart';
+import 'package:terraserve_app/pages/pesan_page.dart';
 
 class MainPage extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -24,7 +29,6 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _onScroll() {
-    // Cek arah scroll
     if (_scrollController.position.userScrollDirection ==
         ScrollDirection.reverse) {
       if (_isNavVisible) {
@@ -49,13 +53,13 @@ class _MainPageState extends State<MainPage> {
     super.dispose();
   }
 
-  // Daftar halaman yang akan ditampilkan
+  // ✅ 2. Ganti placeholder dengan AkunPage
   late final List<Widget> _pages = [
     DashboardPages(user: widget.user, controller: _scrollController),
-    const Center(child: Text("Halaman Pesan")),
+    PesanPage(controller: _scrollController),
     const Center(child: Text("Halaman Pesanan")),
-    const Center(child: Text("Halaman Favorit")),
-    const Center(child: Text("Halaman Akun")),
+    FavoritPage(controller: _scrollController),
+    AkunPage(controller: _scrollController), // Ganti di sini
   ];
 
   void _onItemTapped(int index) {
@@ -84,7 +88,6 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  // ✅ WIDGET NAVBAR TELAH DIPERBARUI TOTAL
   Widget _buildFloatingNavigationBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -127,7 +130,6 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  // ✅ WIDGET BARU UNTUK SETIAP ITEM NAVIGASI
   Widget _buildNavItem({
     required IconData icon,
     required String label,
@@ -142,7 +144,6 @@ class _MainPageState extends State<MainPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Lingkaran hijau di belakang ikon (hanya muncul jika terpilih)
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               padding: const EdgeInsets.all(8),
@@ -159,7 +160,6 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
             const SizedBox(height: 4),
-            // Teks label
             Text(
               label,
               style: GoogleFonts.poppins(
