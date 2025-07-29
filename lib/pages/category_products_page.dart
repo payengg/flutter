@@ -44,7 +44,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
           _products = allProducts
               .where(
                 (product) =>
-                    product.category?.trim().toLowerCase() ==
+                    product.category.trim().toLowerCase() ==
                     widget.categoryName.trim().toLowerCase(),
               )
               .toList();

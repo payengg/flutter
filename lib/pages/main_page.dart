@@ -3,11 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart'; // 1. Tambahkan import Provider
 import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/akun_page.dart';
 import 'package:terraserve_app/pages/dashboard_pages.dart';
 import 'package:terraserve_app/pages/favorit_page.dart';
 import 'package:terraserve_app/pages/pesan_page.dart';
+import 'package:terraserve_app/pages/services/navigation_service.dart'; // 2. Import service navigasi
 
 class MainPage extends StatefulWidget {
   final User user; // ⬅️ Ubah dari Map menjadi User
@@ -24,7 +26,8 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  int _selectedIndex = 0;
+  // 3. Hapus _selectedIndex dari state
+  // int _selectedIndex = 0;
   bool _isNavVisible = true;
   final ScrollController _scrollController = ScrollController();
 
@@ -59,45 +62,52 @@ class _MainPageState extends State<MainPage> {
     super.dispose();
   }
 
-  late final List<Widget> _pages = [
-    DashboardPages(user: widget.user, controller: _scrollController),
-    PesanPage(controller: _scrollController),
-    const Center(child: Text("Halaman Pesanan")),
-    FavoritPage(controller: _scrollController),
-    AkunPage(
-      user: widget.user,
-      controller: _scrollController,
-      token: widget.token,
-    ), // ⬅️ Kirim User
-  ];
+  // 4. Pindahkan _pages ke dalam build method atau buat sebagai getter
+  List<Widget> _getPages(User user) => [
+        DashboardPages(user: user, controller: _scrollController),
+        PesanPage(controller: _scrollController),
+        const Center(child: Text("Halaman Pesanan")),
+        FavoritPage(controller: _scrollController),
+        AkunPage(
+          user: widget.user,
+          controller: _scrollController,
+          token: widget.token,
+        ), // ⬅️ Kirim User
+      ];
 
+  // 5. Ubah _onItemTapped untuk menggunakan Provider
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    Provider.of<NavigationService>(context, listen: false).setIndex(index);
   }
 
   @override
   Widget build(BuildContext context) {
+    // 6. Dapatkan selectedIndex dari Provider
+    final navService = Provider.of<NavigationService>(context);
+    final selectedIndex = navService.selectedIndex;
+    final pages = _getPages(widget.user);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          _pages[_selectedIndex],
+          pages[selectedIndex], // Gunakan selectedIndex dari provider
           AnimatedPositioned(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
             bottom: _isNavVisible ? 0 : -100,
             left: 0,
             right: 0,
-            child: _buildFloatingNavigationBar(),
+            child: _buildFloatingNavigationBar(
+                selectedIndex), // Kirim selectedIndex
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFloatingNavigationBar() {
+  Widget _buildFloatingNavigationBar(int selectedIndex) {
+    // Terima selectedIndex
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Container(
@@ -116,16 +126,31 @@ class _MainPageState extends State<MainPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(icon: Icons.home, label: 'Beranda', index: 0),
             _buildNavItem(
-                icon: Icons.chat_bubble_outline, label: 'Pesan', index: 1),
+                icon: Icons.home,
+                label: 'Beranda',
+                index: 0,
+                selectedIndex: selectedIndex),
+            _buildNavItem(
+                icon: Icons.chat_bubble_outline,
+                label: 'Pesan',
+                index: 1,
+                selectedIndex: selectedIndex),
             _buildNavItem(
                 icon: Icons.shopping_basket_outlined,
                 label: 'Pesanan',
-                index: 2),
+                index: 2,
+                selectedIndex: selectedIndex),
             _buildNavItem(
-                icon: Icons.favorite_border, label: 'Favorit', index: 3),
-            _buildNavItem(icon: Icons.person_outline, label: 'Akun', index: 4),
+                icon: Icons.favorite_border,
+                label: 'Favorit',
+                index: 3,
+                selectedIndex: selectedIndex),
+            _buildNavItem(
+                icon: Icons.person_outline,
+                label: 'Akun',
+                index: 4,
+                selectedIndex: selectedIndex),
           ],
         ),
       ),
@@ -136,8 +161,9 @@ class _MainPageState extends State<MainPage> {
     required IconData icon,
     required String label,
     required int index,
+    required int selectedIndex, // Terima selectedIndex
   }) {
-    final bool isSelected = _selectedIndex == index;
+    final bool isSelected = selectedIndex == index;
     return InkWell(
       onTap: () => _onItemTapped(index),
       borderRadius: BorderRadius.circular(20),

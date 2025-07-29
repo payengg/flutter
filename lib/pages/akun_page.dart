@@ -5,14 +5,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/edit_profile_page.dart';
 import 'package:terraserve_app/pages/login_pages.dart';
+import 'package:terraserve_app/pages/daftar_petani_page.dart';
 
 class AkunPage extends StatefulWidget {
   final ScrollController? controller;
   final User user;
   final String token;
 
-  const AkunPage(
-      {super.key, this.controller, required this.user, required this.token});
+  const AkunPage({
+    super.key,
+    this.controller,
+    required this.user,
+    required this.token,
+  });
 
   @override
   State<AkunPage> createState() => _AkunPageState();
@@ -52,16 +57,16 @@ class _AkunPageState extends State<AkunPage> {
 
     if (result != null && result is Map<String, String>) {
       setState(() {
-        _userName = result['name'] ?? _userName;
-        _userEmail = result['email'] ?? _userEmail;
-        _userPhone = result['phone'] ?? _userPhone;
+        _userName = result['name']!;
+        _userEmail = result['email']!;
+        _userPhone = result['phone']!;
         _userGender = result['gender'] ?? _userGender;
         _userBirthdate = result['birthdate'] ?? _userBirthdate;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Profil berhasil diperbarui!'),
+          content: const Text('Profil berhasil diperbarui!'),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -172,7 +177,6 @@ class _AkunPageState extends State<AkunPage> {
           borderRadius: BorderRadius.circular(7),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const CircleAvatar(
               radius: 30,
@@ -242,9 +246,17 @@ class _AkunPageState extends State<AkunPage> {
               title: 'Bahasa',
               subtitle: 'Pilih bahasa yang ingin digunakan'),
           _buildListTile(
-              icon: Icons.person_outline,
-              title: 'Daftar menjadi Petani',
-              subtitle: 'Bergabung untuk mulai menjual hasil pertanian'),
+            icon: Icons.person_outline,
+            title: 'Daftar menjadi Petani',
+            subtitle: 'Bergabung untuk mulai menjual hasil pertanian',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const DaftarPetaniPage()),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -259,10 +271,8 @@ class _AkunPageState extends State<AkunPage> {
       ),
       child: Column(
         children: [
-          _buildListTile(
-              icon: Icons.help_outline, title: 'Pusat Bantuan', subtitle: null),
-          _buildListTile(
-              icon: Icons.info_outline, title: 'Tentang App', subtitle: null),
+          _buildListTile(icon: Icons.help_outline, title: 'Pusat Bantuan'),
+          _buildListTile(icon: Icons.info_outline, title: 'Tentang App'),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: Text(
@@ -293,6 +303,7 @@ class _AkunPageState extends State<AkunPage> {
     required String title,
     String? subtitle,
     Color? textColor,
+    VoidCallback? onTap,
   }) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF859F3D)),
@@ -315,7 +326,7 @@ class _AkunPageState extends State<AkunPage> {
       trailing: subtitle != null
           ? const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey)
           : null,
-      onTap: () {},
+      onTap: onTap,
     );
   }
 

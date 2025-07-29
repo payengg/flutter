@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:terraserve_app/pages/services/api_service.dart';
+import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/akun_page.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -46,9 +47,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _emailController.text = widget.currentEmail;
     _phoneController.text = widget.currentPhone;
     _dateController.text = widget.currentBirthdate ?? '';
-    if (_genders.contains(widget.currentGender)) {
-      _selectedGender = widget.currentGender;
-    }
+    _selectedGender = widget.currentGender;
   }
 
   @override
@@ -66,7 +65,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       setState(() {
         _imageFile = File(pickedFile.path);
       });
-
       // Jika ingin upload ke backend:
       // await ApiService.uploadProfileImage(_imageFile, widget.token);
     }
@@ -163,25 +161,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   if (success) {
                     final updatedUser =
                         await ApiService.fetchUser(widget.token);
-                    if (!mounted) return;
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AkunPage(
-                          user: updatedUser!,
-                          controller: ScrollController(),
-                          token: widget.token,
-                        ),
-                      ),
-                    );
-                  } else {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Gagal memperbarui profil'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
+                    if (updatedUser != null) {
+                      if (context.mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AkunPage(
+                              user: updatedUser,
+                              controller: ScrollController(),
+                              token: widget.token,
+                            ),
+                          ),
+                        );
+                      }
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Gagal memperbarui profil'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
                   }
                 },
                 style: ElevatedButton.styleFrom(

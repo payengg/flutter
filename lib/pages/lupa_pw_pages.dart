@@ -254,8 +254,9 @@ class _LupaPwPagesState extends State<LupaPwPages> {
     return TextFormField(
       controller: _inputController,
       validator: (value) {
-        if (value == null || value.isEmpty)
+        if (value == null || value.isEmpty) {
           return 'Nomor telepon tidak boleh kosong';
+        }
         return null;
       },
       keyboardType: TextInputType.phone,

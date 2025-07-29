@@ -18,28 +18,33 @@ class ApiService {
   ) async {
     final url = Uri.parse('$baseUrl/user');
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode({
-        'name': name,
-        'email': email,
-        'phone': phone,
-        'gender': gender,
-        'birthdate': birthdate,
-      }),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'name': name,
+          'email': email,
+          'phone': phone,
+          'gender': gender,
+          'birthdate': birthdate,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      print('Profile updated successfully.');
-      return true;
-    } else {
-      print('Update failed: ${response.statusCode}');
-      print(response.body);
+      if (response.statusCode == 200) {
+        print('Profile updated successfully.');
+        return true;
+      } else {
+        print('Update failed: ${response.statusCode}');
+        print(response.body);
+        return false;
+      }
+    } catch (e) {
+      print('Exception during updateProfile: $e');
       return false;
     }
   }
@@ -53,9 +58,15 @@ class ApiService {
       },
     );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return User.fromJson(data['user']);
+    if (response.statusCode == 200 && response.body.isNotEmpty) {
+      final jsonMap = json.decode(response.body);
+
+      if (jsonMap.containsKey('data')) {
+        return User.fromJson(jsonMap['data']);
+      } else {
+        print('Unexpected response format: $jsonMap');
+        return null;
+      }
     } else {
       print('Failed to fetch user: ${response.body}');
       return null;
