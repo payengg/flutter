@@ -7,11 +7,13 @@ class EditProfilePage extends StatefulWidget {
   // ✅ 1. Tambahkan parameter untuk menerima data awal
   final String currentName;
   final String currentEmail;
+  final String currentPhone;
 
   const EditProfilePage({
     super.key,
     required this.currentName,
     required this.currentEmail,
+    required this.currentPhone,
   });
 
   @override
@@ -25,6 +27,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
   @override
   void initState() {
@@ -32,6 +35,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     // ✅ 2. Atur nilai awal controller dari data yang diterima
     _nameController.text = widget.currentName;
     _emailController.text = widget.currentEmail;
+    _phoneController.text = widget.currentPhone;
   }
 
   @override
@@ -39,6 +43,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _nameController.dispose();
     _emailController.dispose();
     _dateController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -109,6 +114,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   final updatedData = {
                     'name': _nameController.text,
                     'email': _emailController.text,
+                    'phone': _phoneController.text,
                   };
                   // Gunakan Navigator.pop untuk mengirim data kembali
                   Navigator.pop(context, updatedData);
@@ -136,7 +142,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _buildTextField({required String hint, required TextEditingController controller}) {
+  Widget _buildTextField(
+      {required String hint, required TextEditingController controller}) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
@@ -148,7 +155,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       ),
     );
   }
@@ -165,14 +173,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
           child: Row(
             children: [
               Container(
-                width: 22,
-                height: 15,
-                decoration: BoxDecoration(
-                  color: Colors.red[800],
-                   border: Border.all(color: Colors.grey.shade400, width: 0.5)
-                ),
-                child: const Center(child: Text(" ", style: TextStyle(fontSize: 1, color: Colors.transparent)))
-              ),
+                  width: 22,
+                  height: 15,
+                  decoration: BoxDecoration(
+                      color: Colors.red[800],
+                      border:
+                          Border.all(color: Colors.grey.shade400, width: 0.5)),
+                  child: const Center(
+                      child: Text(" ",
+                          style: TextStyle(
+                              fontSize: 1, color: Colors.transparent)))),
               const SizedBox(width: 8),
               Text(
                 '+62',
@@ -184,6 +194,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         const SizedBox(width: 8),
         Expanded(
           child: TextFormField(
+            controller: _phoneController,
             decoration: InputDecoration(
               hintText: 'Nomor Telepon',
               hintStyle: GoogleFonts.poppins(color: Colors.grey[600]),
@@ -193,7 +204,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
             ),
             keyboardType: TextInputType.phone,
           ),
@@ -205,7 +217,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget _buildGenderDropdown() {
     return DropdownButtonFormField<String>(
       value: _selectedGender,
-      hint: Text('Jenis Kelamin', style: GoogleFonts.poppins(color: Colors.grey[600])),
+      hint: Text('Jenis Kelamin',
+          style: GoogleFonts.poppins(color: Colors.grey[600])),
       onChanged: (String? newValue) {
         setState(() {
           _selectedGender = newValue;
@@ -224,7 +237,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       ),
       icon: const Icon(Icons.keyboard_arrow_down),
     );
@@ -242,7 +256,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           lastDate: DateTime.now(),
         );
         if (pickedDate != null) {
-          String formattedDate = "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+          String formattedDate =
+              "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
           setState(() {
             _dateController.text = formattedDate;
           });
@@ -257,8 +272,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        suffixIcon: Icon(Icons.calendar_today_outlined, color: Colors.grey[600]),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        suffixIcon:
+            Icon(Icons.calendar_today_outlined, color: Colors.grey[600]),
       ),
     );
   }

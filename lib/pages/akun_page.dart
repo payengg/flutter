@@ -19,12 +19,14 @@ class AkunPage extends StatefulWidget {
 class _AkunPageState extends State<AkunPage> {
   late String _userName;
   late String _userEmail;
+  late String _userPhone = '';
 
   @override
   void initState() {
     super.initState();
     _userName = widget.user.name ?? 'Guest';
     _userEmail = widget.user.email ?? 'guest@example.com';
+    _userPhone = widget.user.phone ?? '';
   }
 
   void _navigateToEditProfile() async {
@@ -34,6 +36,7 @@ class _AkunPageState extends State<AkunPage> {
         builder: (context) => EditProfilePage(
           currentName: _userName,
           currentEmail: _userEmail,
+          currentPhone: _userPhone ?? '',
         ),
       ),
     );
