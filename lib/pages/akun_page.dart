@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/edit_profile_page.dart';
 import 'package:terraserve_app/pages/login_pages.dart';
+import 'package:terraserve_app/pages/daftar_petani_page.dart';
 
 class AkunPage extends StatefulWidget {
   final ScrollController? controller;
@@ -36,7 +37,7 @@ class _AkunPageState extends State<AkunPage> {
         builder: (context) => EditProfilePage(
           currentName: _userName,
           currentEmail: _userEmail,
-          currentPhone: _userPhone ?? '',
+          currentPhone: _userPhone,
         ),
       ),
     );
@@ -49,7 +50,7 @@ class _AkunPageState extends State<AkunPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Profil berhasil diperbarui!'),
+          content: const Text('Profil berhasil diperbarui!'),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -228,10 +229,19 @@ class _AkunPageState extends State<AkunPage> {
               icon: Icons.language,
               title: 'Bahasa',
               subtitle: 'Pilih bahasa yang ingin digunakan'),
+          
+          // Tombol daftar petani sekarang selalu ditampilkan
           _buildListTile(
-              icon: Icons.person_outline,
-              title: 'Daftar menjadi Petani',
-              subtitle: 'Bergabung untuk mulai menjual hasil pertanian'),
+            icon: Icons.person_outline,
+            title: 'Daftar menjadi Petani',
+            subtitle: 'Bergabung untuk mulai menjual hasil pertanian',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DaftarPetaniPage()),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -246,12 +256,10 @@ class _AkunPageState extends State<AkunPage> {
       ),
       child: Column(
         children: [
-          _buildListTile(
-              icon: Icons.help_outline, title: 'Pusat Bantuan', subtitle: null),
-          _buildListTile(
-              icon: Icons.info_outline, title: 'Tentang App', subtitle: null),
+          _buildListTile(icon: Icons.help_outline, title: 'Pusat Bantuan'),
+          _buildListTile(icon: Icons.info_outline, title: 'Tentang App'),
           ListTile(
-            leading: Icon(Icons.logout, color: Colors.red),
+            leading: const Icon(Icons.logout, color: Colors.red),
             title: Text(
               'Log out',
               style: GoogleFonts.poppins(
@@ -280,6 +288,7 @@ class _AkunPageState extends State<AkunPage> {
     required String title,
     String? subtitle,
     Color? textColor,
+    VoidCallback? onTap,
   }) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF859F3D)),
@@ -302,14 +311,13 @@ class _AkunPageState extends State<AkunPage> {
       trailing: subtitle != null
           ? const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey)
           : null,
-      onTap: () {},
+      onTap: onTap,
     );
   }
 
   Widget _buildNotificationTile() {
     return SwitchListTile(
-      secondary: const Icon(Icons.notifications_outlined,
-          color: const Color(0xFF859F3D)),
+      secondary: const Icon(Icons.notifications_outlined, color: Color(0xFF859F3D)),
       title: Text(
         'Pemberitahuan',
         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),

@@ -159,7 +159,7 @@ class _FarmerProfilePageState extends State<FarmerProfilePage> {
                       backgroundColor: Colors.white,
                       child: CircleAvatar(
                         radius: 56,
-                        backgroundImage: AssetImage('assets/images/farmer_avatar.png'),
+                        backgroundImage: AssetImage('assets/images/profilyanti.png'),
                       ),
                     ),
                   ),
