@@ -1,7 +1,10 @@
+// lib/pages/product_detail_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:terraserve_app/pages/cart_page.dart';
+import 'package:terraserve_app/pages/farmer_profile_page.dart'; // ✅ 1. Impor halaman profil petani
 import 'package:terraserve_app/pages/models/product_model.dart';
 import 'package:terraserve_app/pages/services/cart_service.dart';
 import 'package:terraserve_app/pages/services/favorite_service.dart';
@@ -49,7 +52,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   const SizedBox(height: 24),
                   _buildDivider(),
                   const SizedBox(height: 24),
-                  _buildSellerInfo(),
+                  _buildSellerInfo(), // Widget ini sekarang bisa diklik
                   const SizedBox(height: 24),
                   _buildDivider(),
                   const SizedBox(height: 24),
@@ -181,38 +184,52 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  // ✅ 2. Bungkus widget dengan InkWell dan tambahkan navigasi
   Widget _buildSellerInfo() {
-    return Row(
-      children: [
-        const CircleAvatar(
-          radius: 24,
-          backgroundImage: AssetImage('assets/images/farmer.png'),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.product.seller?.name ?? 'Petani Yanti',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FarmerProfilePage()),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          children: [
+            const CircleAvatar(
+              radius: 24,
+              backgroundImage: AssetImage('assets/images/farmer.png'),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.product.seller?.name ?? 'Petani Yanti',
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Lampung Selatan',
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
               ),
-              Text(
-                'Lampung Selatan',
-                style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
-              ),
-            ],
-          ),
+            ),
+            IconButton(
+              onPressed: () {
+                // Logika untuk chat
+              },
+              icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF859F3D)),
+            ),
+          ],
         ),
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF859F3D)),
-        ),
-      ],
+      ),
     );
   }
 
-  // ✅ KODE DI BAWAH INI DIKEMBALIKAN SEPERTI SEMULA
   Widget _buildReviewsSection() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
