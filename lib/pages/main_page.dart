@@ -3,13 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:terraserve_app/pages/akun_page.dart'; // ✅ 1. Impor AkunPage
+import 'package:terraserve_app/pages/models/user.dart';
+import 'package:terraserve_app/pages/akun_page.dart';
 import 'package:terraserve_app/pages/dashboard_pages.dart';
 import 'package:terraserve_app/pages/favorit_page.dart';
 import 'package:terraserve_app/pages/pesan_page.dart';
 
 class MainPage extends StatefulWidget {
-  final Map<String, dynamic> user;
+  final User user; // ⬅️ Ubah dari Map menjadi User
 
   const MainPage({super.key, required this.user});
 
@@ -53,13 +54,12 @@ class _MainPageState extends State<MainPage> {
     super.dispose();
   }
 
-  // ✅ 2. Ganti placeholder dengan AkunPage
   late final List<Widget> _pages = [
     DashboardPages(user: widget.user, controller: _scrollController),
     PesanPage(controller: _scrollController),
     const Center(child: Text("Halaman Pesanan")),
     FavoritPage(controller: _scrollController),
-    AkunPage(controller: _scrollController), // Ganti di sini
+    AkunPage(user: widget.user, controller: _scrollController), // ⬅️ Kirim User
   ];
 
   void _onItemTapped(int index) {
@@ -109,20 +109,13 @@ class _MainPageState extends State<MainPage> {
           children: [
             _buildNavItem(icon: Icons.home, label: 'Beranda', index: 0),
             _buildNavItem(
-              icon: Icons.chat_bubble_outline,
-              label: 'Pesan',
-              index: 1,
-            ),
+                icon: Icons.chat_bubble_outline, label: 'Pesan', index: 1),
             _buildNavItem(
-              icon: Icons.shopping_basket_outlined,
-              label: 'Pesanan',
-              index: 2,
-            ),
+                icon: Icons.shopping_basket_outlined,
+                label: 'Pesanan',
+                index: 2),
             _buildNavItem(
-              icon: Icons.favorite_border,
-              label: 'Favorit',
-              index: 3,
-            ),
+                icon: Icons.favorite_border, label: 'Favorit', index: 3),
             _buildNavItem(icon: Icons.person_outline, label: 'Akun', index: 4),
           ],
         ),
@@ -148,9 +141,8 @@ class _MainPageState extends State<MainPage> {
               duration: const Duration(milliseconds: 300),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF859F3D)
-                    : Colors.transparent,
+                color:
+                    isSelected ? const Color(0xFF859F3D) : Colors.transparent,
                 shape: BoxShape.circle,
               ),
               child: Icon(

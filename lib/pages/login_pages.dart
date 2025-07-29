@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:terraserve_app/config/api.dart';
-import 'package:terraserve_app/pages/main_page.dart'; 
-import 'package:terraserve_app/config/api.dart'; // Menggunakan baseUrl dari sini
+import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/main_page.dart';
 import 'package:terraserve_app/pages/register_pages.dart';
 import 'package:terraserve_app/pages/lupa_pw_pages.dart';
-import 'package:terraserve_app/pages/dashboard_pages.dart'; 
 
 class LoginPages extends StatefulWidget {
   const LoginPages({super.key});
@@ -27,16 +25,11 @@ class _LoginPagesState extends State<LoginPages> {
   bool _isLoading = false;
 
   Future<void> _loginUser() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      // URL sudah benar karena mengambil dari config/api.dart
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {'Accept': 'application/json'},
@@ -50,9 +43,10 @@ class _LoginPagesState extends State<LoginPages> {
       print('Login Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body)['data'];
-        // Pastikan key dari API Anda adalah 'user', bukan 'User'
-        final user = data;
+        final jsonResponse = json.decode(response.body);
+        final userData = jsonResponse['data']['User'];
+
+        final user = User.fromJson(userData);
 
         if (mounted) {
           Navigator.of(context).pushReplacement(
@@ -63,6 +57,7 @@ class _LoginPagesState extends State<LoginPages> {
         final responseBody = json.decode(response.body);
         String errorMessage =
             responseBody['message'] ?? 'Email atau password salah.';
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
@@ -82,11 +77,7 @@ class _LoginPagesState extends State<LoginPages> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -181,8 +172,6 @@ class _LoginPagesState extends State<LoginPages> {
       ),
     );
   }
-
-  // --- WIDGET BUILDER METHODS ---
 
   Widget _buildLoginTabs() {
     return Container(
@@ -290,18 +279,13 @@ class _LoginPagesState extends State<LoginPages> {
         TextFormField(
           controller: controller,
           obscureText: !_isPasswordVisible,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Password tidak boleh kosong';
-            }
-            return null;
-          },
+          validator: (value) => value == null || value.isEmpty
+              ? 'Password tidak boleh kosong'
+              : null,
           decoration: InputDecoration(
             hintText: '••••••••',
-            prefixIcon: const Icon(
-              Icons.lock_outline_rounded,
-              color: Colors.grey,
-            ),
+            prefixIcon:
+                const Icon(Icons.lock_outline_rounded, color: Colors.grey),
             suffixIcon: IconButton(
               icon: Icon(
                 _isPasswordVisible
@@ -372,8 +356,7 @@ class _LoginPagesState extends State<LoginPages> {
           ),
           disabledBackgroundColor: const Color(0xFF859F3D).withOpacity(0.5),
         ),
-        child:
-            child ??
+        child: child ??
             Text(
               text,
               style: GoogleFonts.poppins(

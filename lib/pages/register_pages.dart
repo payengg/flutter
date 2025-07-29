@@ -421,8 +421,7 @@ class _RegisterPagesState extends State<RegisterPages> {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child:
-            child ??
+        child: child ??
             Text(
               text,
               style: GoogleFonts.poppins(

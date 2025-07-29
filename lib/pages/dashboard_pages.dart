@@ -13,6 +13,7 @@ import 'package:terraserve_app/pages/services/product_category_service.dart';
 import 'package:terraserve_app/pages/services/product_service.dart';
 import 'package:terraserve_app/pages/all_categories_page.dart';
 import 'package:terraserve_app/pages/widgets/product_card.dart';
+import 'package:terraserve_app/pages/models/user.dart';
 
 Color hexToColor(String code) {
   if (code.length == 7 && code.startsWith('#')) {
@@ -22,7 +23,7 @@ Color hexToColor(String code) {
 }
 
 class DashboardPages extends StatefulWidget {
-  final Map<String, dynamic> user;
+  final User user;
   final ScrollController? controller;
 
   const DashboardPages({super.key, required this.user, this.controller});

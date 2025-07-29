@@ -2,21 +2,30 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/edit_profile_page.dart';
-// ✅ Perbaikan: Menggunakan nama file dan kelas yang benar
-import 'package:terraserve_app/pages/login_pages.dart'; 
+import 'package:terraserve_app/pages/login_pages.dart';
 
 class AkunPage extends StatefulWidget {
   final ScrollController? controller;
-  const AkunPage({super.key, this.controller});
+  final User user;
+
+  const AkunPage({super.key, this.controller, required this.user});
 
   @override
   State<AkunPage> createState() => _AkunPageState();
 }
 
 class _AkunPageState extends State<AkunPage> {
-  String _userName = 'Itunuoluwa Abidoye';
-  String _userEmail = '@itunuoluwa';
+  late String _userName;
+  late String _userEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _userName = widget.user.name ?? 'Guest';
+    _userEmail = widget.user.email ?? 'guest@example.com';
+  }
 
   void _navigateToEditProfile() async {
     final result = await Navigator.push(
@@ -71,7 +80,7 @@ class _AkunPageState extends State<AkunPage> {
                 style: GoogleFonts.poppins(color: Colors.grey[700]),
               ),
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Tutup dialog
+                Navigator.of(dialogContext).pop();
               },
             ),
             TextButton(
@@ -82,7 +91,6 @@ class _AkunPageState extends State<AkunPage> {
               ),
               onPressed: () {
                 Navigator.of(dialogContext).pushAndRemoveUntil(
-                  // ✅ Perbaikan: Menggunakan nama kelas yang benar
                   MaterialPageRoute(builder: (context) => const LoginPages()),
                   (Route<dynamic> route) => false,
                 );
@@ -204,11 +212,23 @@ class _AkunPageState extends State<AkunPage> {
       ),
       child: Column(
         children: [
-          _buildListTile(icon: Icons.refresh, title: 'Pesanan Ulang', subtitle: 'Lihat dan kelola pesanan sebelumnya'),
-          _buildListTile(icon: Icons.inventory_2_outlined, title: 'Pengembalian', subtitle: 'Atur dan pantau proses pengembalian barang'),
+          _buildListTile(
+              icon: Icons.refresh,
+              title: 'Pesanan Ulang',
+              subtitle: 'Lihat dan kelola pesanan sebelumnya'),
+          _buildListTile(
+              icon: Icons.inventory_2_outlined,
+              title: 'Pengembalian',
+              subtitle: 'Atur dan pantau proses pengembalian barang'),
           _buildNotificationTile(),
-          _buildListTile(icon: Icons.language, title: 'Bahasa', subtitle: 'Pilih bahasa yang ingin digunakan'),
-          _buildListTile(icon: Icons.person_outline, title: 'Daftar menjadi Petani', subtitle: 'Bergabung untuk mulai menjual hasil pertanian'),
+          _buildListTile(
+              icon: Icons.language,
+              title: 'Bahasa',
+              subtitle: 'Pilih bahasa yang ingin digunakan'),
+          _buildListTile(
+              icon: Icons.person_outline,
+              title: 'Daftar menjadi Petani',
+              subtitle: 'Bergabung untuk mulai menjual hasil pertanian'),
         ],
       ),
     );
@@ -223,8 +243,10 @@ class _AkunPageState extends State<AkunPage> {
       ),
       child: Column(
         children: [
-          _buildListTile(icon: Icons.help_outline, title: 'Pusat Bantuan', subtitle: null),
-          _buildListTile(icon: Icons.info_outline, title: 'Tentang App', subtitle: null),
+          _buildListTile(
+              icon: Icons.help_outline, title: 'Pusat Bantuan', subtitle: null),
+          _buildListTile(
+              icon: Icons.info_outline, title: 'Tentang App', subtitle: null),
           ListTile(
             leading: Icon(Icons.logout, color: Colors.red),
             title: Text(
@@ -250,7 +272,12 @@ class _AkunPageState extends State<AkunPage> {
     );
   }
 
-  Widget _buildListTile({required IconData icon, required String title, String? subtitle, Color? textColor}) {
+  Widget _buildListTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    Color? textColor,
+  }) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF859F3D)),
       title: Text(
@@ -269,14 +296,17 @@ class _AkunPageState extends State<AkunPage> {
               ),
             )
           : null,
-      trailing: (subtitle != null) ? const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey) : null,
+      trailing: subtitle != null
+          ? const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey)
+          : null,
       onTap: () {},
     );
   }
 
   Widget _buildNotificationTile() {
     return SwitchListTile(
-      secondary: const Icon(Icons.notifications_outlined, color: const Color(0xFF859F3D)),
+      secondary: const Icon(Icons.notifications_outlined,
+          color: const Color(0xFF859F3D)),
       title: Text(
         'Pemberitahuan',
         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),

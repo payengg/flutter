@@ -1,1 +1,3 @@
-const String baseUrl = 'http://192.168.110.30/terraserve-backend/public/api';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final String baseUrl = dotenv.env['API_URL']!;
