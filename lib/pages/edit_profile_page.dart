@@ -1,19 +1,26 @@
-// lib/pages/edit_profile_page.dart
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:terraserve_app/pages/services/api_service.dart';
+import 'package:terraserve_app/pages/akun_page.dart';
 
 class EditProfilePage extends StatefulWidget {
-  // ✅ 1. Tambahkan parameter untuk menerima data awal
+  final String token;
   final String currentName;
   final String currentEmail;
   final String currentPhone;
+  final String? currentGender;
+  final String? currentBirthdate;
 
   const EditProfilePage({
     super.key,
+    required this.token,
     required this.currentName,
     required this.currentEmail,
     required this.currentPhone,
+    this.currentGender,
+    this.currentBirthdate,
   });
 
   @override
@@ -21,30 +28,48 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _dateController = TextEditingController();
+
+  File? _imageFile;
+  final ImagePicker _picker = ImagePicker();
+
   String? _selectedGender;
   final List<String> _genders = ['Laki-laki', 'Perempuan'];
-
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // ✅ 2. Atur nilai awal controller dari data yang diterima
     _nameController.text = widget.currentName;
     _emailController.text = widget.currentEmail;
     _phoneController.text = widget.currentPhone;
+    _dateController.text = widget.currentBirthdate ?? '';
+    if (_genders.contains(widget.currentGender)) {
+      _selectedGender = widget.currentGender;
+    }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _dateController.dispose();
     _phoneController.dispose();
+    _dateController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+
+      // Jika ingin upload ke backend:
+      // await ApiService.uploadProfileImage(_imageFile, widget.token);
+    }
   }
 
   @override
@@ -68,13 +93,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
         child: Column(
           children: [
-            // Profile Picture
-            const CircleAvatar(
-              radius: 50,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=47'),
+            GestureDetector(
+              onTap: _pickImage,
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: _imageFile != null
+                        ? FileImage(_imageFile!)
+                        : const NetworkImage('https://i.pravatar.cc/150?img=47')
+                            as ImageProvider,
+                  ),
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.camera_alt,
+                        size: 18, color: Colors.grey[800]),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
-            // Teks ini tidak perlu di-state lagi karena halaman akan ditutup
             Text(
               widget.currentName,
               style: GoogleFonts.poppins(
@@ -91,8 +131,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
             ),
             const SizedBox(height: 32),
-
-            // Form Fields
             _buildTextField(hint: 'Nama Lengkap', controller: _nameController),
             const SizedBox(height: 16),
             _buildTextField(hint: 'Email', controller: _emailController),
@@ -103,27 +141,54 @@ class _EditProfilePageState extends State<EditProfilePage> {
             const SizedBox(height: 16),
             _buildDatePicker(),
             const SizedBox(height: 40),
-
-            // Update Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                // ✅ 3. Kirim data kembali saat tombol ditekan
-                onPressed: () {
-                  // Buat map berisi data yang diperbarui
-                  final updatedData = {
-                    'name': _nameController.text,
-                    'email': _emailController.text,
-                    'phone': _phoneController.text,
-                  };
-                  // Gunakan Navigator.pop untuk mengirim data kembali
-                  Navigator.pop(context, updatedData);
+                onPressed: () async {
+                  final name = _nameController.text.trim();
+                  final email = _emailController.text.trim();
+                  final phone = _phoneController.text.trim();
+                  final gender = _selectedGender ?? '';
+                  final birthdate = _dateController.text.trim();
+
+                  final success = await ApiService.updateProfile(
+                    name,
+                    email,
+                    phone,
+                    gender,
+                    birthdate,
+                    widget.token,
+                  );
+
+                  if (success) {
+                    final updatedUser =
+                        await ApiService.fetchUser(widget.token);
+                    if (!mounted) return;
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AkunPage(
+                          user: updatedUser!,
+                          controller: ScrollController(),
+                          token: widget.token,
+                        ),
+                      ),
+                    );
+                  } else {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Gagal memperbarui profil'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF859F3D),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
                 child: Text(
@@ -142,8 +207,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _buildTextField(
-      {required String hint, required TextEditingController controller}) {
+  Widget _buildTextField({
+    required String hint,
+    required TextEditingController controller,
+  }) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
@@ -170,26 +237,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Row(
-            children: [
-              Container(
-                  width: 22,
-                  height: 15,
-                  decoration: BoxDecoration(
-                      color: Colors.red[800],
-                      border:
-                          Border.all(color: Colors.grey.shade400, width: 0.5)),
-                  child: const Center(
-                      child: Text(" ",
-                          style: TextStyle(
-                              fontSize: 1, color: Colors.transparent)))),
-              const SizedBox(width: 8),
-              Text(
-                '+62',
-                style: GoogleFonts.poppins(),
-              ),
-            ],
-          ),
+          child: Text('+62', style: GoogleFonts.poppins()),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -217,17 +265,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget _buildGenderDropdown() {
     return DropdownButtonFormField<String>(
       value: _selectedGender,
-      hint: Text('Jenis Kelamin',
-          style: GoogleFonts.poppins(color: Colors.grey[600])),
-      onChanged: (String? newValue) {
-        setState(() {
-          _selectedGender = newValue;
-        });
-      },
-      items: _genders.map<DropdownMenuItem<String>>((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value, style: GoogleFonts.poppins()),
+      hint: Text(
+        'Jenis Kelamin',
+        style: GoogleFonts.poppins(color: Colors.grey[600]),
+      ),
+      onChanged: (value) => setState(() => _selectedGender = value),
+      items: _genders.map((gender) {
+        return DropdownMenuItem(
+          value: gender,
+          child: Text(gender, style: GoogleFonts.poppins()),
         );
       }).toList(),
       decoration: InputDecoration(
@@ -240,7 +286,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         contentPadding:
             const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       ),
-      icon: const Icon(Icons.keyboard_arrow_down),
     );
   }
 
@@ -249,18 +294,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
       controller: _dateController,
       readOnly: true,
       onTap: () async {
-        DateTime? pickedDate = await showDatePicker(
+        final pickedDate = await showDatePicker(
           context: context,
-          initialDate: DateTime.now(),
+          initialDate:
+              DateTime.tryParse(_dateController.text) ?? DateTime(2000),
           firstDate: DateTime(1900),
           lastDate: DateTime.now(),
         );
         if (pickedDate != null) {
-          String formattedDate =
-              "${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-          setState(() {
-            _dateController.text = formattedDate;
-          });
+          _dateController.text =
+              "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
         }
       },
       decoration: InputDecoration(

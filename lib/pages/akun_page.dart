@@ -9,8 +9,10 @@ import 'package:terraserve_app/pages/login_pages.dart';
 class AkunPage extends StatefulWidget {
   final ScrollController? controller;
   final User user;
+  final String token;
 
-  const AkunPage({super.key, this.controller, required this.user});
+  const AkunPage(
+      {super.key, this.controller, required this.user, required this.token});
 
   @override
   State<AkunPage> createState() => _AkunPageState();
@@ -19,7 +21,9 @@ class AkunPage extends StatefulWidget {
 class _AkunPageState extends State<AkunPage> {
   late String _userName;
   late String _userEmail;
-  late String _userPhone = '';
+  late String _userPhone;
+  late String _userGender;
+  late String _userBirthdate;
 
   @override
   void initState() {
@@ -27,6 +31,8 @@ class _AkunPageState extends State<AkunPage> {
     _userName = widget.user.name ?? 'Guest';
     _userEmail = widget.user.email ?? 'guest@example.com';
     _userPhone = widget.user.phone ?? '';
+    _userGender = widget.user.gender ?? '';
+    _userBirthdate = widget.user.birthdate ?? '';
   }
 
   void _navigateToEditProfile() async {
@@ -36,15 +42,21 @@ class _AkunPageState extends State<AkunPage> {
         builder: (context) => EditProfilePage(
           currentName: _userName,
           currentEmail: _userEmail,
-          currentPhone: _userPhone ?? '',
+          currentPhone: _userPhone,
+          currentGender: _userGender,
+          currentBirthdate: _userBirthdate,
+          token: widget.token,
         ),
       ),
     );
 
     if (result != null && result is Map<String, String>) {
       setState(() {
-        _userName = result['name']!;
-        _userEmail = result['email']!;
+        _userName = result['name'] ?? _userName;
+        _userEmail = result['email'] ?? _userEmail;
+        _userPhone = result['phone'] ?? _userPhone;
+        _userGender = result['gender'] ?? _userGender;
+        _userBirthdate = result['birthdate'] ?? _userBirthdate;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -160,6 +172,7 @@ class _AkunPageState extends State<AkunPage> {
           borderRadius: BorderRadius.circular(7),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const CircleAvatar(
               radius: 30,
@@ -251,7 +264,7 @@ class _AkunPageState extends State<AkunPage> {
           _buildListTile(
               icon: Icons.info_outline, title: 'Tentang App', subtitle: null),
           ListTile(
-            leading: Icon(Icons.logout, color: Colors.red),
+            leading: const Icon(Icons.logout, color: Colors.red),
             title: Text(
               'Log out',
               style: GoogleFonts.poppins(
@@ -308,8 +321,8 @@ class _AkunPageState extends State<AkunPage> {
 
   Widget _buildNotificationTile() {
     return SwitchListTile(
-      secondary: const Icon(Icons.notifications_outlined,
-          color: const Color(0xFF859F3D)),
+      secondary:
+          const Icon(Icons.notifications_outlined, color: Color(0xFF859F3D)),
       title: Text(
         'Pemberitahuan',
         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),

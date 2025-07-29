@@ -6,7 +6,10 @@ import 'package:terraserve_app/config/api.dart';
 import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/main_page.dart';
 import 'package:terraserve_app/pages/register_pages.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:terraserve_app/pages/lupa_pw_pages.dart';
+
+final storage = FlutterSecureStorage();
 
 class LoginPages extends StatefulWidget {
   const LoginPages({super.key});
@@ -45,12 +48,20 @@ class _LoginPagesState extends State<LoginPages> {
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
         final userData = jsonResponse['data']['User'];
+        final token = jsonResponse['data']['access_token'];
+
+        // ✅ Simpan token ke secure storage
+        await storage.write(key: 'token', value: token);
 
         final user = User.fromJson(userData);
 
         if (mounted) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => MainPage(user: user)),
+            MaterialPageRoute(
+                builder: (context) => MainPage(
+                      user: user,
+                      token: token,
+                    )),
           );
         }
       } else {

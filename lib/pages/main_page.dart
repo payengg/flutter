@@ -11,8 +11,13 @@ import 'package:terraserve_app/pages/pesan_page.dart';
 
 class MainPage extends StatefulWidget {
   final User user; // ⬅️ Ubah dari Map menjadi User
+  final String token;
 
-  const MainPage({super.key, required this.user});
+  const MainPage({
+    super.key,
+    required this.user,
+    required this.token,
+  });
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -59,7 +64,11 @@ class _MainPageState extends State<MainPage> {
     PesanPage(controller: _scrollController),
     const Center(child: Text("Halaman Pesanan")),
     FavoritPage(controller: _scrollController),
-    AkunPage(user: widget.user, controller: _scrollController), // ⬅️ Kirim User
+    AkunPage(
+      user: widget.user,
+      controller: _scrollController,
+      token: widget.token,
+    ), // ⬅️ Kirim User
   ];
 
   void _onItemTapped(int index) {
