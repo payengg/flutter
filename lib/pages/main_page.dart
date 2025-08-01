@@ -3,37 +3,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart'; // 1. Tambahkan import Provider
+import 'package:provider/provider.dart';
 import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/akun_page.dart';
 import 'package:terraserve_app/pages/dashboard_pages.dart';
 import 'package:terraserve_app/pages/favorit_page.dart';
 import 'package:terraserve_app/pages/pesan_page.dart';
-import 'package:terraserve_app/pages/services/navigation_service.dart'; // 2. Import service navigasi
+import 'package:terraserve_app/pages/services/navigation_service.dart';
+import 'package:terraserve_app/providers/farmer_application_provider.dart';
 
 class MainPage extends StatefulWidget {
-  final User user; // ⬅️ Ubah dari Map menjadi User
+  final User user;
   final String token;
 
-  const MainPage({
-    super.key,
-    required this.user,
-    required this.token,
-  });
+  const MainPage({super.key, required this.user, required this.token});
 
   @override
   State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  // 3. Hapus _selectedIndex dari state
-  // int _selectedIndex = 0;
   bool _isNavVisible = true;
   final ScrollController _scrollController = ScrollController();
+
+  late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
+
+    // Lakukan ini di initState: ambil user id dan simpan ke provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final farmerProvider =
+          Provider.of<FarmerApplicationProvider>(context, listen: false);
+      farmerProvider.setUserId(widget.user.id);
+    });
+
+    _pages = [
+      DashboardPages(user: widget.user, controller: _scrollController),
+      PesanPage(controller: _scrollController),
+      const Center(child: Text("Halaman Pesanan")),
+      FavoritPage(controller: _scrollController),
+      AkunPage(
+          user: widget.user,
+          token: widget.token,
+          controller: _scrollController),
+    ];
+
     _scrollController.addListener(_onScroll);
   }
 
@@ -62,52 +78,35 @@ class _MainPageState extends State<MainPage> {
     super.dispose();
   }
 
-  // 4. Pindahkan _pages ke dalam build method atau buat sebagai getter
-  List<Widget> _getPages(User user) => [
-        DashboardPages(user: user, controller: _scrollController),
-        PesanPage(controller: _scrollController),
-        const Center(child: Text("Halaman Pesanan")),
-        FavoritPage(controller: _scrollController),
-        AkunPage(
-          user: widget.user,
-          controller: _scrollController,
-          token: widget.token,
-        ), // ⬅️ Kirim User
-      ];
-
-  // 5. Ubah _onItemTapped untuk menggunakan Provider
   void _onItemTapped(int index) {
     Provider.of<NavigationService>(context, listen: false).setIndex(index);
   }
 
   @override
   Widget build(BuildContext context) {
-    // 6. Dapatkan selectedIndex dari Provider
-    final navService = Provider.of<NavigationService>(context);
-    final selectedIndex = navService.selectedIndex;
-    final pages = _getPages(widget.user);
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          pages[selectedIndex], // Gunakan selectedIndex dari provider
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            bottom: _isNavVisible ? 0 : -100,
-            left: 0,
-            right: 0,
-            child: _buildFloatingNavigationBar(
-                selectedIndex), // Kirim selectedIndex
+    return Consumer<NavigationService>(
+      builder: (context, navService, child) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: Stack(
+            children: [
+              _pages[navService.selectedIndex],
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                bottom: _isNavVisible ? 0 : -100,
+                left: 0,
+                right: 0,
+                child: _buildFloatingNavigationBar(navService.selectedIndex),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildFloatingNavigationBar(int selectedIndex) {
-    // Terima selectedIndex
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Container(
@@ -161,7 +160,7 @@ class _MainPageState extends State<MainPage> {
     required IconData icon,
     required String label,
     required int index,
-    required int selectedIndex, // Terima selectedIndex
+    required int selectedIndex,
   }) {
     final bool isSelected = selectedIndex == index;
     return InkWell(

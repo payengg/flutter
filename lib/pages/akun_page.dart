@@ -1,11 +1,10 @@
-// lib/pages/akun_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/edit_profile_page.dart';
 import 'package:terraserve_app/pages/login_pages.dart';
+import 'package:terraserve_app/pages/services/storage_service.dart';
 import 'package:terraserve_app/pages/daftar_petani_page.dart';
+import 'package:terraserve_app/pages/models/user.dart';
 
 class AkunPage extends StatefulWidget {
   final ScrollController? controller;
@@ -29,6 +28,7 @@ class _AkunPageState extends State<AkunPage> {
   late String _userPhone;
   late String _userGender;
   late String _userBirthdate;
+  final StorageService _storageService = StorageService();
 
   @override
   void initState() {
@@ -109,11 +109,15 @@ class _AkunPageState extends State<AkunPage> {
                 style: GoogleFonts.poppins(
                     color: Colors.red, fontWeight: FontWeight.bold),
               ),
-              onPressed: () {
-                Navigator.of(dialogContext).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginPages()),
-                  (Route<dynamic> route) => false,
-                );
+              onPressed: () async {
+                await _storageService.deleteAll();
+
+                if (mounted) {
+                  Navigator.of(dialogContext).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const LoginPages()),
+                    (Route<dynamic> route) => false,
+                  );
+                }
               },
             ),
           ],
@@ -323,7 +327,7 @@ class _AkunPageState extends State<AkunPage> {
               ),
             )
           : null,
-      trailing: subtitle != null
+      trailing: (subtitle != null)
           ? const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey)
           : null,
       onTap: onTap,
