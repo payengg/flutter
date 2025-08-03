@@ -1,12 +1,11 @@
-// lib/pages/form_identitas_page.dart
-
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:terraserve_app/pages/instruksi_ktp_page.dart';
-// 1. Import halaman baru
+import 'package:provider/provider.dart';
 import 'package:terraserve_app/pages/informasi_toko_page.dart';
+import 'package:terraserve_app/pages/instruksi_ktp_page.dart';
+import 'package:terraserve_app/providers/farmer_application_provider.dart';
 
 class FormIdentitasPage extends StatefulWidget {
   const FormIdentitasPage({super.key});
@@ -16,44 +15,127 @@ class FormIdentitasPage extends StatefulWidget {
 }
 
 class _FormIdentitasPageState extends State<FormIdentitasPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  late final TextEditingController _namaController;
+  late final TextEditingController _nikController;
+  late final TextEditingController _alamatController;
+  late final TextEditingController _luasController;
+
   File? _fotoKTP;
   File? _fotoLahan;
   File? _fotoWajah;
   bool _setujuSyarat = false;
 
-  Future<void> _ambilGambarDariGaleri(Function(File) onFilePilih) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  @override
+  void initState() {
+    super.initState();
+    // Mengambil data dari provider jika sudah ada (untuk kasus edit atau kembali)
+    final provider =
+        Provider.of<FarmerApplicationProvider>(context, listen: false);
+    _namaController =
+        TextEditingController(text: provider.applicationData.fullName);
+    _nikController = TextEditingController(text: provider.applicationData.nik);
+    _alamatController =
+        TextEditingController(text: provider.applicationData.farmAddress);
+    _luasController =
+        TextEditingController(text: provider.applicationData.landSizeStatus);
 
-    if (pickedFile != null) {
-      setState(() {
-        onFilePilih(File(pickedFile.path));
-      });
-    }
+    _fotoKTP = provider.applicationData.ktpPhoto;
+    _fotoLahan = provider.applicationData.farmPhoto;
+    _fotoWajah = provider.applicationData.facePhoto;
+  }
+
+  @override
+  void dispose() {
+    _namaController.dispose();
+    _nikController.dispose();
+    _alamatController.dispose();
+    _luasController.dispose();
+    super.dispose();
   }
 
   Future<void> _mulaiAlurFotoKTP() async {
-    final hasil = await Navigator.push(
+    final hasil = await Navigator.push<File>(
       context,
       MaterialPageRoute(builder: (context) => const InstruksiKtpPage()),
     );
 
-    if (hasil != null && hasil is File) {
+    if (hasil != null) {
       setState(() {
         _fotoKTP = hasil;
       });
     }
   }
 
-  Future<void> _ambilFotoWajah(Function(File) onFilePilih) async {
+  Future<void> _pilihFotoLahan() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _fotoLahan = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> _ambilFotoWajah() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
       setState(() {
-        onFilePilih(File(pickedFile.path));
+        _fotoWajah = File(pickedFile.path);
       });
     }
+  }
+
+  void _submitForm() {
+    final isFormValid = _formKey.currentState?.validate() ?? false;
+
+    if (!isFormValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Harap isi semua kolom yang wajib diisi.')),
+      );
+      return;
+    }
+
+    if (_fotoKTP == null || _fotoWajah == null || _fotoLahan == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Harap unggah semua foto yang diperlukan.')),
+      );
+      return;
+    }
+
+    if (!_setujuSyarat) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Anda harus menyetujui Syarat & Ketentuan.')),
+      );
+      return;
+    }
+
+    final provider =
+        Provider.of<FarmerApplicationProvider>(context, listen: false);
+
+    // Memperbarui provider dengan semua data dari form ini
+    provider.updatePersonalData(
+      fullName: _namaController.text,
+      nik: _nikController.text,
+      farmAddress: _alamatController.text,
+      landSizeStatus: _luasController.text,
+      ktpPhoto: _fotoKTP!,
+      farmPhoto: _fotoLahan!,
+      facePhoto: _fotoWajah!,
+    );
+
+    // Navigasi ke halaman selanjutnya
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const InformasiTokoPage()),
+    );
   }
 
   @override
@@ -73,67 +155,83 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildStepper(),
-              const SizedBox(height: 24),
-              _buildTextField(label: 'Nama Lengkap', hint: 'Masukkan nama anda'),
-              _buildTextField(label: 'NIK', hint: 'Masukkan NIK anda'),
-              _buildTextField(
-                  label: 'Alamat Lengkap Lahan',
-                  hint: 'Masukkan alamat lahan anda'),
-              _buildTextField(
-                  label: 'Luas Lahan & Status',
-                  hint: 'Contoh: 2 Hektar, Milik Sendiri'),
-              _buildImagePicker(
-                label: 'Foto KTP',
-                fileGambar: _fotoKTP,
-                onTap: _mulaiAlurFotoKTP,
-              ),
-              _buildVerifikasiWajah(),
-              _buildImagePicker(
-                label: 'Foto Lahan',
-                fileGambar: _fotoLahan,
-                onTap: () => _ambilGambarDariGaleri((file) => _fotoLahan = file),
-              ),
-              const SizedBox(height: 16),
-              _buildSyaratKetentuan(),
-              const SizedBox(height: 16),
-              _buildInfoText(),
-              const SizedBox(height: 24),
-              // 2. Perbarui fungsi tombol kirim
-              _buildTombolKirim(context),
-              const SizedBox(height: 16),
-              Center(
-                child: Text(
-                  'Jika Anda menghadapi kesulitan, silahkan hubungi kami',
-                  style: GoogleFonts.poppins(
-                      fontSize: 12, color: Colors.grey[600]),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStepper(),
+                const SizedBox(height: 24),
+                _buildTextFormField(
+                  controller: _namaController,
+                  label: 'Nama Lengkap',
+                  hint: 'Masukkan nama anda',
+                  validator: (value) =>
+                      value!.isEmpty ? 'Nama lengkap tidak boleh kosong' : null,
                 ),
-              ),
-            ],
+                _buildTextFormField(
+                  controller: _nikController,
+                  label: 'NIK',
+                  hint: 'Masukkan NIK anda',
+                  validator: (value) =>
+                      value!.isEmpty ? 'NIK tidak boleh kosong' : null,
+                ),
+                _buildTextFormField(
+                  controller: _alamatController,
+                  label: 'Alamat Lengkap Lahan',
+                  hint: 'Masukkan alamat lahan anda',
+                  validator: (value) =>
+                      value!.isEmpty ? 'Alamat lahan tidak boleh kosong' : null,
+                ),
+                _buildTextFormField(
+                  controller: _luasController,
+                  label: 'Luas Lahan & Status',
+                  hint: 'Contoh: 2 Hektar, Milik Sendiri',
+                  validator: (value) => value!.isEmpty
+                      ? 'Luas lahan & status tidak boleh kosong'
+                      : null,
+                ),
+                _buildImagePicker(
+                  label: 'Foto KTP',
+                  fileGambar: _fotoKTP,
+                  onTap: _mulaiAlurFotoKTP,
+                ),
+                _buildVerifikasiWajah(),
+                _buildImagePicker(
+                  label: 'Foto Lahan',
+                  fileGambar: _fotoLahan,
+                  onTap: _pilihFotoLahan,
+                ),
+                const SizedBox(height: 16),
+                _buildSyaratKetentuan(),
+                const SizedBox(height: 16),
+                _buildInfoText(),
+                const SizedBox(height: 24),
+                _buildTombolSelanjutnya(),
+                const SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    'Jika Anda menghadapi kesulitan, silahkan hubungi kami',
+                    style: GoogleFonts.poppins(
+                        fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // Widget Tombol Kirim sekarang menerima context
-  Widget _buildTombolKirim(BuildContext context) {
+  Widget _buildTombolSelanjutnya() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
-          // Aksi navigasi ke halaman Informasi Toko
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const InformasiTokoPage()),
-          );
-        },
+        onPressed: _submitForm,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF859F3D),
           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -141,7 +239,7 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
             borderRadius: BorderRadius.circular(15),
           ),
         ),
-        child: Text('Kirim',
+        child: Text('Selanjutnya',
             style: GoogleFonts.poppins(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
@@ -150,7 +248,55 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
     );
   }
 
-  // --- Widget-widget lain tidak berubah ---
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required String? Function(String?)? validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: GoogleFonts.poppins(
+                  color: Colors.black, fontWeight: FontWeight.w600),
+              children: const [
+                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: controller,
+            validator: validator,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFF859F3D)),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildImagePicker(
       {required String label,
       required File? fileGambar,
@@ -160,9 +306,16 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
+          RichText(
+            text: TextSpan(
+              text: label,
               style: GoogleFonts.poppins(
-                  color: Colors.black, fontWeight: FontWeight.w600)),
+                  color: Colors.black, fontWeight: FontWeight.w600),
+              children: const [
+                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          ),
           const SizedBox(height: 8),
           GestureDetector(
             onTap: onTap,
@@ -208,11 +361,18 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Verifikasi Wajah',
+              RichText(
+                text: TextSpan(
+                  text: 'Verifikasi Wajah',
                   style: GoogleFonts.poppins(
-                      color: Colors.black, fontWeight: FontWeight.w600)),
+                      color: Colors.black, fontWeight: FontWeight.w600),
+                  children: const [
+                    TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
               TextButton(
-                onPressed: () => _ambilFotoWajah((file) => _fotoWajah = file),
+                onPressed: _ambilFotoWajah,
                 child: Text(
                   'Ambil Foto Wajah >',
                   style: GoogleFonts.poppins(color: const Color(0xFF859F3D)),
@@ -221,20 +381,56 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
             ],
           ),
           if (_fotoWajah != null)
-            Container(
-              height: 120,
-              width: 120,
-              margin: const EdgeInsets.only(top: 8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                image: DecorationImage(
-                  image: FileImage(_fotoWajah!),
-                  fit: BoxFit.cover,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                height: 120,
+                width: 120,
+                margin: const EdgeInsets.only(top: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  image: DecorationImage(
+                    image: FileImage(_fotoWajah!),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSyaratKetentuan() {
+    return Row(
+      children: [
+        Checkbox(
+          value: _setujuSyarat,
+          onChanged: (bool? value) {
+            setState(() {
+              _setujuSyarat = value ?? false;
+            });
+          },
+          activeColor: const Color(0xFF859F3D),
+        ),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              text: 'Saya menyetujui ',
+              style: GoogleFonts.poppins(color: Colors.black, fontSize: 12),
+              children: [
+                TextSpan(
+                  text: 'Syarat & Ketentuan',
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xFF1D65AE),
+                      fontWeight: FontWeight.bold),
+                ),
+                const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -265,80 +461,6 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
         ),
         const SizedBox(height: 8),
         Text(label, style: GoogleFonts.poppins(fontSize: 12, color: color)),
-      ],
-    );
-  }
-
-  Widget _buildTextField({required String label, required String hint}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: GoogleFonts.poppins(
-                  color: Colors.black, fontWeight: FontWeight.w600),
-              children: const [
-                TextSpan(text: '*', style: TextStyle(color: Colors.red)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF859F3D)),
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSyaratKetentuan() {
-    return Row(
-      children: [
-        Checkbox(
-          value: _setujuSyarat,
-          onChanged: (bool? value) {
-            setState(() {
-              _setujuSyarat = value!;
-            });
-          },
-          activeColor: const Color(0xFF859F3D),
-        ),
-        Expanded(
-          child: RichText(
-            text: TextSpan(
-              text: 'Saya menyetujui ',
-              style: GoogleFonts.poppins(color: Colors.black, fontSize: 12),
-              children: [
-                TextSpan(
-                  text: 'Syarat & Ketentuan',
-                  style: GoogleFonts.poppins(
-                      color: const Color(0xFF1D65AE),
-                      fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }

@@ -5,6 +5,7 @@ import 'package:terraserve_app/pages/startup_pages.dart';
 import 'package:terraserve_app/pages/services/favorite_service.dart';
 import 'package:terraserve_app/pages/services/cart_service.dart'; // ✅ PATH SUDAH BENAR
 import 'package:terraserve_app/pages/services/navigation_service.dart';
+import 'package:terraserve_app/providers/farmer_application_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,8 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (context) => FavoriteService()),
         ChangeNotifierProvider(create: (context) => CartService()),
         ChangeNotifierProvider(create: (context) => NavigationService()),
+        ChangeNotifierProvider(
+            create: (context) => FarmerApplicationProvider()),
       ],
       child: const TerraServe(),
     ),

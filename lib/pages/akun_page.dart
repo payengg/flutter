@@ -1,17 +1,22 @@
-// lib/pages/akun_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/edit_profile_page.dart';
 import 'package:terraserve_app/pages/login_pages.dart';
+import 'package:terraserve_app/pages/services/storage_service.dart';
 import 'package:terraserve_app/pages/daftar_petani_page.dart';
+import 'package:terraserve_app/pages/models/user.dart';
 
 class AkunPage extends StatefulWidget {
   final ScrollController? controller;
   final User user;
+  final String token;
 
-  const AkunPage({super.key, this.controller, required this.user});
+  const AkunPage({
+    super.key,
+    this.controller,
+    required this.user,
+    required this.token,
+  });
 
   @override
   State<AkunPage> createState() => _AkunPageState();
@@ -20,7 +25,10 @@ class AkunPage extends StatefulWidget {
 class _AkunPageState extends State<AkunPage> {
   late String _userName;
   late String _userEmail;
-  late String _userPhone = '';
+  late String _userPhone;
+  late String _userGender;
+  late String _userBirthdate;
+  final StorageService _storageService = StorageService();
 
   @override
   void initState() {
@@ -28,6 +36,8 @@ class _AkunPageState extends State<AkunPage> {
     _userName = widget.user.name ?? 'Guest';
     _userEmail = widget.user.email ?? 'guest@example.com';
     _userPhone = widget.user.phone ?? '';
+    _userGender = widget.user.gender ?? '';
+    _userBirthdate = widget.user.birthdate ?? '';
   }
 
   void _navigateToEditProfile() async {
@@ -38,6 +48,9 @@ class _AkunPageState extends State<AkunPage> {
           currentName: _userName,
           currentEmail: _userEmail,
           currentPhone: _userPhone,
+          currentGender: _userGender,
+          currentBirthdate: _userBirthdate,
+          token: widget.token,
         ),
       ),
     );
@@ -46,6 +59,9 @@ class _AkunPageState extends State<AkunPage> {
       setState(() {
         _userName = result['name']!;
         _userEmail = result['email']!;
+        _userPhone = result['phone']!;
+        _userGender = result['gender'] ?? _userGender;
+        _userBirthdate = result['birthdate'] ?? _userBirthdate;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -93,11 +109,15 @@ class _AkunPageState extends State<AkunPage> {
                 style: GoogleFonts.poppins(
                     color: Colors.red, fontWeight: FontWeight.bold),
               ),
-              onPressed: () {
-                Navigator.of(dialogContext).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginPages()),
-                  (Route<dynamic> route) => false,
-                );
+              onPressed: () async {
+                await _storageService.deleteAll();
+
+                if (mounted) {
+                  Navigator.of(dialogContext).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const LoginPages()),
+                    (Route<dynamic> route) => false,
+                  );
+                }
               },
             ),
           ],
@@ -229,8 +249,6 @@ class _AkunPageState extends State<AkunPage> {
               icon: Icons.language,
               title: 'Bahasa',
               subtitle: 'Pilih bahasa yang ingin digunakan'),
-          
-          // Tombol daftar petani sekarang selalu ditampilkan
           _buildListTile(
             icon: Icons.person_outline,
             title: 'Daftar menjadi Petani',
@@ -238,7 +256,8 @@ class _AkunPageState extends State<AkunPage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const DaftarPetaniPage()),
+                MaterialPageRoute(
+                    builder: (context) => const DaftarPetaniPage()),
               );
             },
           ),
@@ -308,7 +327,7 @@ class _AkunPageState extends State<AkunPage> {
               ),
             )
           : null,
-      trailing: subtitle != null
+      trailing: (subtitle != null)
           ? const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey)
           : null,
       onTap: onTap,
@@ -317,7 +336,8 @@ class _AkunPageState extends State<AkunPage> {
 
   Widget _buildNotificationTile() {
     return SwitchListTile(
-      secondary: const Icon(Icons.notifications_outlined, color: Color(0xFF859F3D)),
+      secondary:
+          const Icon(Icons.notifications_outlined, color: Color(0xFF859F3D)),
       title: Text(
         'Pemberitahuan',
         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),

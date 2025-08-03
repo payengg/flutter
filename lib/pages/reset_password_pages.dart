@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:terraserve_app/config/api.dart';
-import 'package:terraserve_app/pages/login_pages.dart';
 import 'package:terraserve_app/pages/reset_password_confirm.dart';
 
 class ResetPasswordPage extends StatefulWidget {

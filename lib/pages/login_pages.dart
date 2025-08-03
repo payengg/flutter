@@ -7,6 +7,7 @@ import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/main_page.dart';
 import 'package:terraserve_app/pages/register_pages.dart';
 import 'package:terraserve_app/pages/lupa_pw_pages.dart';
+import 'package:terraserve_app/pages/services/storage_service.dart';
 
 class LoginPages extends StatefulWidget {
   const LoginPages({super.key});
@@ -19,6 +20,8 @@ class _LoginPagesState extends State<LoginPages> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  final StorageService _storageService = StorageService();
 
   bool _isPasswordVisible = false;
   bool _rememberMe = false;
@@ -44,13 +47,34 @@ class _LoginPagesState extends State<LoginPages> {
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-        final userData = jsonResponse['data']['User'];
+        final data = jsonResponse['data'];
 
-        final user = User.fromJson(userData);
+        final userData = data['user'] ?? data['User'];
+        final token = data['access_token'];
+
+        if (userData == null || token == null) {
+          throw Exception('Format respons API tidak valid.');
+        }
+
+        // ✅ PERBAIKAN: Token selalu disimpan, terlepas dari _rememberMe
+        await _storageService.saveToken(token);
+
+        if (_rememberMe) {
+          // Logika "Ingat saya" hanya menyimpan data lain jika perlu
+          // Contoh: menyimpan email pengguna
+          // await _storageService.saveEmail(_emailController.text);
+        }
+
+        final userObject = User.fromJson(userData);
 
         if (mounted) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => MainPage(user: user)),
+            MaterialPageRoute(
+              builder: (context) => MainPage(
+                user: userObject,
+                token: token,
+              ),
+            ),
           );
         }
       } else {
@@ -68,10 +92,8 @@ class _LoginPagesState extends State<LoginPages> {
       print('Login Error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Tidak dapat terhubung ke server. Periksa koneksi Anda.',
-            ),
+          SnackBar(
+            content: Text(e.toString()),
             backgroundColor: Colors.red,
           ),
         );

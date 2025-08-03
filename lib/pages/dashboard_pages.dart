@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:terraserve_app/pages/cart_page.dart'; // ✅ Tambahkan import ini
+import 'package:terraserve_app/pages/cart_page.dart';
 import 'package:terraserve_app/pages/models/banner_model.dart';
 import 'package:terraserve_app/pages/models/product_category_model.dart';
 import 'package:terraserve_app/pages/models/product_model.dart';
@@ -107,16 +107,27 @@ class _DashboardPagesState extends State<DashboardPages> {
     }
   }
 
-  void _filterProducts(String categoryName) {
+  void _filterProducts(String parentCategoryName) {
     setState(() {
-      _selectedCategory = categoryName;
-      if (categoryName == 'All') {
+      _selectedCategory = parentCategoryName;
+
+      if (parentCategoryName == 'All') {
         _filteredProducts = List.from(_products);
-      } else {
-        _filteredProducts = _products
-            .where((product) => product.category == categoryName)
-            .toList();
+        return;
       }
+
+      final selectedParentCategory = _categories.firstWhere(
+        (cat) => cat.name == parentCategoryName,
+        orElse: () => ProductCategory(id: -1, name: '', subCategories: []),
+      );
+
+      final subCategoryNames =
+          selectedParentCategory.subCategories.map((sub) => sub.name).toList();
+
+      _filteredProducts = _products.where((product) {
+        return product.category == parentCategoryName ||
+            subCategoryNames.contains(product.category);
+      }).toList();
     });
   }
 
@@ -124,6 +135,9 @@ class _DashboardPagesState extends State<DashboardPages> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
+    // ✅ PERBAIKAN: Hapus widget Scaffold yang tidak perlu.
+    // Sekarang, halaman ini hanya mengembalikan konten yang akan
+    // ditempatkan di dalam Scaffold dari MainPage.
     return SingleChildScrollView(
       controller: widget.controller,
       child: ConstrainedBox(
@@ -202,7 +216,6 @@ class _DashboardPagesState extends State<DashboardPages> {
               ],
             ),
             child: IconButton(
-              // ✅ Fungsikan tombol keranjang
               onPressed: () {
                 Navigator.push(
                   context,

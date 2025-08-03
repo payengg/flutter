@@ -27,6 +27,7 @@ class PendaftaranSuksesPage extends StatelessWidget {
               const SizedBox(height: 32),
               Text(
                 'Tunggu dulu, ya! Kamu belum langsung terdaftar sebagai Petani di TerraServe.',
+                'Tunggu dulu, ya! Kamu belum langsung terdaftar sebagai Petani di TerraServe.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 17,
@@ -37,6 +38,7 @@ class PendaftaranSuksesPage extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'Dokumenmu sedang kami verifikasi dan proses ini bisa memakan waktu hingga 1x24 jam.',
+                'Dokumenmu sedang kami verifikasi dan proses ini bisa memakan waktu hingga 1x24 jam.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
@@ -44,6 +46,8 @@ class PendaftaranSuksesPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
+              Text(
+                'Setelah terverifikasi, kamu bisa mulai jualan hasil panen langsung ke konsumen!',
                Text(
                 'Setelah terverifikasi, kamu bisa mulai jualan hasil panen langsung ke konsumen!',
                 textAlign: TextAlign.center,
@@ -57,11 +61,7 @@ class PendaftaranSuksesPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Atur tab Akun (index 4) sebagai aktif
-                    Provider.of<NavigationService>(context, listen: false).setIndex(4);
-                    
-                    // Kembali ke halaman utama
-                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF859F3D),
