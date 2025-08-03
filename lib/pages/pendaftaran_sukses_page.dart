@@ -26,7 +26,7 @@ class PendaftaranSuksesPage extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               Text(
-                'Selamat, kamu resmi terdaftar sebagai petani di Terraserve!',
+                'Tunggu dulu, ya! Kamu belum langsung terdaftar sebagai Petani di TerraServe.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 17,
@@ -36,7 +36,7 @@ class PendaftaranSuksesPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Kini kamu bisa mulai menjual hasil panen langsung ke konsumen.',
+                'Dokumenmu sedang kami verifikasi dan proses ini bisa memakan waktu hingga 1x24 jam.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
@@ -45,7 +45,7 @@ class PendaftaranSuksesPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
                Text(
-                'Kami sedang memverifikasi dokumenmu. Proses ini hanya memakan waktu sebentar, dan kamu akan segera bisa mulai berjualan!',
+                'Setelah terverifikasi, kamu bisa mulai jualan hasil panen langsung ke konsumen!',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
