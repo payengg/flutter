@@ -2,12 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+// 1. Kembalikan import yang diperlukan
 import 'package:terraserve_app/pages/services/api_service.dart';
-import 'package:terraserve_app/pages/models/user.dart';
-import 'package:terraserve_app/pages/akun_page.dart';
 
 class EditProfilePage extends StatefulWidget {
-  final String token;
+  // 2. Kembalikan parameter token
+  final String token; 
   final String currentName;
   final String currentEmail;
   final String currentPhone;
@@ -47,7 +47,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _emailController.text = widget.currentEmail;
     _phoneController.text = widget.currentPhone;
     _dateController.text = widget.currentBirthdate ?? '';
-    _selectedGender = widget.currentGender;
+
+    // Perbaikan untuk DropdownButton tetap ada
+    if (widget.currentGender != null && _genders.contains(widget.currentGender)) {
+      _selectedGender = widget.currentGender;
+    } else {
+      _selectedGender = null;
+    }
   }
 
   @override
@@ -65,10 +71,51 @@ class _EditProfilePageState extends State<EditProfilePage> {
       setState(() {
         _imageFile = File(pickedFile.path);
       });
-      // Jika ingin upload ke backend:
-      // await ApiService.uploadProfileImage(_imageFile, widget.token);
     }
   }
+
+  // --- PERBAIKAN DI SINI ---
+  // Mengubah logika update menjadi lebih tangguh dengan try-catch
+  Future<void> _updateProfile() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final phone = _phoneController.text.trim();
+    final gender = _selectedGender ?? '';
+    final birthdate = _dateController.text.trim();
+
+    try {
+      // Panggil API untuk update. Kita asumsikan akan error jika gagal.
+      await ApiService.updateProfile(
+        name,
+        email,
+        phone,
+        gender,
+        birthdate,
+        widget.token,
+      );
+
+      // Jika kode mencapai baris ini, berarti update berhasil.
+      if (mounted) {
+        // Kirim data baru kembali ke AkunPage
+        final updatedData = {
+          'name': name,
+          'email': email,
+        };
+        Navigator.pop(context, updatedData);
+      }
+    } catch (e) {
+      // Jika terjadi error saat memanggil API, tampilkan pesan.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal memperbarui profil. Coba lagi.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+  // --- AKHIR PERBAIKAN ---
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +161,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             const SizedBox(height: 16),
             Text(
-              widget.currentName,
+              _nameController.text,
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -122,7 +169,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             const SizedBox(height: 4),
             Text(
-              widget.currentEmail,
+              _emailController.text,
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -142,50 +189,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () async {
-                  final name = _nameController.text.trim();
-                  final email = _emailController.text.trim();
-                  final phone = _phoneController.text.trim();
-                  final gender = _selectedGender ?? '';
-                  final birthdate = _dateController.text.trim();
-
-                  final success = await ApiService.updateProfile(
-                    name,
-                    email,
-                    phone,
-                    gender,
-                    birthdate,
-                    widget.token,
-                  );
-
-                  if (success) {
-                    final updatedUser =
-                        await ApiService.fetchUser(widget.token);
-                    if (updatedUser != null) {
-                      if (context.mounted) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AkunPage(
-                              user: updatedUser,
-                              controller: ScrollController(),
-                              token: widget.token,
-                            ),
-                          ),
-                        );
-                      }
-                    } else {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Gagal memperbarui profil'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  }
-                },
+                onPressed: _updateProfile, // Panggil fungsi yang sudah diperbarui
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF859F3D),
                   padding: const EdgeInsets.symmetric(vertical: 16),

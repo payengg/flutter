@@ -11,6 +11,7 @@ import 'package:terraserve_app/pages/favorit_page.dart';
 import 'package:terraserve_app/pages/pesan_page.dart';
 import 'package:terraserve_app/pages/services/navigation_service.dart';
 import 'package:terraserve_app/providers/farmer_application_provider.dart';
+import 'package:terraserve_app/pages/pesanan_page.dart';
 
 class MainPage extends StatefulWidget {
   final User user;
@@ -32,7 +33,6 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
 
-    // Lakukan ini di initState: ambil user id dan simpan ke provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final farmerProvider =
           Provider.of<FarmerApplicationProvider>(context, listen: false);
@@ -42,12 +42,14 @@ class _MainPageState extends State<MainPage> {
     _pages = [
       DashboardPages(user: widget.user, controller: _scrollController),
       PesanPage(controller: _scrollController),
-      const Center(child: Text("Halaman Pesanan")),
+      // ✅ PERUBAHAN 1: Berikan ScrollController ke PesananPage
+      PesananPage(controller: _scrollController),
       FavoritPage(controller: _scrollController),
       AkunPage(
-          user: widget.user,
-          token: widget.token,
-          controller: _scrollController),
+        user: widget.user,
+        token: widget.token,
+        controller: _scrollController,
+      ),
     ];
 
     _scrollController.addListener(_onScroll);
@@ -78,8 +80,29 @@ class _MainPageState extends State<MainPage> {
     super.dispose();
   }
 
+  // ✅ PERUBAHAN 2: Logika disempurnakan
   void _onItemTapped(int index) {
-    Provider.of<NavigationService>(context, listen: false).setIndex(index);
+    // Cek jika tab yang dituju sama, scroll ke atas
+    if (index ==
+        Provider.of<NavigationService>(context, listen: false).selectedIndex) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    } else {
+      // Jika pindah tab, ubah indeks via provider
+      Provider.of<NavigationService>(context, listen: false).setIndex(index);
+    }
+
+    // Selalu pastikan navigasi bar muncul kembali saat tab di-tap
+    if (!_isNavVisible) {
+      setState(() {
+        _isNavVisible = true;
+      });
+    }
   }
 
   @override

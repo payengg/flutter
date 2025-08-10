@@ -1,10 +1,14 @@
+// lib/pages/akun_page.dart
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/edit_profile_page.dart';
 import 'package:terraserve_app/pages/login_pages.dart';
-import 'package:terraserve_app/pages/services/storage_service.dart';
 import 'package:terraserve_app/pages/daftar_petani_page.dart';
-import 'package:terraserve_app/pages/models/user.dart';
+import 'package:terraserve_app/pages/toko_saya_page.dart';
+import 'package:terraserve_app/pages/services/navigation_service.dart';
 
 class AkunPage extends StatefulWidget {
   final ScrollController? controller;
@@ -25,10 +29,9 @@ class AkunPage extends StatefulWidget {
 class _AkunPageState extends State<AkunPage> {
   late String _userName;
   late String _userEmail;
-  late String _userPhone;
-  late String _userGender;
-  late String _userBirthdate;
-  final StorageService _storageService = StorageService();
+  late String _userPhone = '';
+  String? _userGender;
+  String? _userBirthdate;
 
   @override
   void initState() {
@@ -36,8 +39,8 @@ class _AkunPageState extends State<AkunPage> {
     _userName = widget.user.name ?? 'Guest';
     _userEmail = widget.user.email ?? 'guest@example.com';
     _userPhone = widget.user.phone ?? '';
-    _userGender = widget.user.gender ?? '';
-    _userBirthdate = widget.user.birthdate ?? '';
+    _userGender = widget.user.gender;
+    _userBirthdate = widget.user.birthdate;
   }
 
   void _navigateToEditProfile() async {
@@ -45,12 +48,12 @@ class _AkunPageState extends State<AkunPage> {
       context,
       MaterialPageRoute(
         builder: (context) => EditProfilePage(
+          token: widget.token,
           currentName: _userName,
           currentEmail: _userEmail,
           currentPhone: _userPhone,
           currentGender: _userGender,
           currentBirthdate: _userBirthdate,
-          token: widget.token,
         ),
       ),
     );
@@ -59,21 +62,20 @@ class _AkunPageState extends State<AkunPage> {
       setState(() {
         _userName = result['name']!;
         _userEmail = result['email']!;
-        _userPhone = result['phone']!;
-        _userGender = result['gender'] ?? _userGender;
-        _userBirthdate = result['birthdate'] ?? _userBirthdate;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Profil berhasil diperbarui!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Profil berhasil diperbarui!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
   }
 
@@ -109,15 +111,11 @@ class _AkunPageState extends State<AkunPage> {
                 style: GoogleFonts.poppins(
                     color: Colors.red, fontWeight: FontWeight.bold),
               ),
-              onPressed: () async {
-                await _storageService.deleteAll();
-
-                if (mounted) {
-                  Navigator.of(dialogContext).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const LoginPages()),
-                    (Route<dynamic> route) => false,
-                  );
-                }
+              onPressed: () {
+                Navigator.of(dialogContext).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginPages()),
+                  (Route<dynamic> route) => false,
+                );
               },
             ),
           ],
@@ -237,6 +235,17 @@ class _AkunPageState extends State<AkunPage> {
       child: Column(
         children: [
           _buildListTile(
+            icon: Icons.storefront_outlined,
+            title: 'Toko Saya',
+            subtitle: 'Kelola produk dan penjualan toko Anda',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TokoSayaPage()),
+              );
+            },
+          ),
+          _buildListTile(
               icon: Icons.refresh,
               title: 'Pesanan Ulang',
               subtitle: 'Lihat dan kelola pesanan sebelumnya'),
@@ -250,14 +259,15 @@ class _AkunPageState extends State<AkunPage> {
               title: 'Bahasa',
               subtitle: 'Pilih bahasa yang ingin digunakan'),
           _buildListTile(
-            icon: Icons.person_outline,
+            icon: Icons.agriculture_outlined,
             title: 'Daftar menjadi Petani',
             subtitle: 'Bergabung untuk mulai menjual hasil pertanian',
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const DaftarPetaniPage()),
+                  builder: (context) => const DaftarPetaniPage(),
+                ),
               );
             },
           ),
@@ -327,7 +337,7 @@ class _AkunPageState extends State<AkunPage> {
               ),
             )
           : null,
-      trailing: (subtitle != null)
+      trailing: subtitle != null
           ? const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey)
           : null,
       onTap: onTap,

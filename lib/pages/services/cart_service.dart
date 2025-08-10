@@ -6,34 +6,30 @@ import 'package:terraserve_app/pages/models/product_model.dart';
 
 class CartService with ChangeNotifier {
   final List<CartItem> _items = [];
-
   List<CartItem> get items => _items;
   int get itemCount => _items.length;
 
-  // ✅ Total harga sekarang hanya menghitung item yang dipilih
+  List<CartItem> get selectedItems =>
+      _items.where((item) => item.isSelected).toList();
+
   double get totalPrice {
     double total = 0.0;
-    for (var item in _items) {
-      if (item.isSelected) {
-        total += item.product.price * item.quantity;
-      }
+    for (var item in selectedItems) {
+      total += item.product.price * item.quantity;
     }
     return total;
   }
 
-  // ✅ Fungsi untuk mengecek apakah semua item terpilih
   bool get areAllItemsSelected {
     if (_items.isEmpty) return false;
     return _items.every((item) => item.isSelected);
   }
 
-  // ✅ Fungsi baru untuk mengubah status seleksi item
   void toggleItemSelected(CartItem item) {
     item.isSelected = !item.isSelected;
     notifyListeners();
   }
 
-  // ✅ Fungsi baru untuk memilih/membatalkan semua item
   void toggleSelectAll(bool select) {
     for (var item in _items) {
       item.isSelected = select;
@@ -49,7 +45,7 @@ class CartService with ChangeNotifier {
         return;
       }
     }
-    _items.add(CartItem(product: product)); // isSelected otomatis true
+    _items.add(CartItem(product: product));
     notifyListeners();
   }
 
@@ -69,6 +65,12 @@ class CartService with ChangeNotifier {
     } else {
       removeFromCart(cartItem);
     }
+    notifyListeners();
+  }
+
+  // FUNGSI PENTING UNTUK MENGHAPUS ITEM YANG SUDAH DI-CHECKOUT
+  void removeSelectedItems() {
+    _items.removeWhere((item) => item.isSelected);
     notifyListeners();
   }
 }

@@ -1,5 +1,3 @@
-// lib/pages/pendaftaran_sukses_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -17,43 +15,27 @@ class PendaftaranSuksesPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(),
-              Image.asset(
-                'assets/images/suksespetani.png',
-                height: 250,
-              ),
+              Image.asset('assets/images/suksespetani.png', height: 250),
               const SizedBox(height: 32),
               Text(
-                'Tunggu dulu, ya! Kamu belum langsung terdaftar sebagai Petani di TerraServe.',
-                'Tunggu dulu, ya! Kamu belum langsung terdaftar sebagai Petani di TerraServe.',
+                'Pendaftaran Berhasil!',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 17,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  fontSize: 24,
+                  color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                'Dokumenmu sedang kami verifikasi dan proses ini bisa memakan waktu hingga 1x24 jam.',
-                'Dokumenmu sedang kami verifikasi dan proses ini bisa memakan waktu hingga 1x24 jam.',
+                'Akun petani Anda sedang ditinjau. Kami akan memberitahu Anda jika sudah disetujui.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Setelah terverifikasi, kamu bisa mulai jualan hasil panen langsung ke konsumen!',
-               Text(
-                'Setelah terverifikasi, kamu bisa mulai jualan hasil panen langsung ke konsumen!',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 16,
                   color: Colors.grey[600],
+                  height: 1.5,
                 ),
               ),
               const Spacer(),
@@ -61,7 +43,23 @@ class PendaftaranSuksesPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    final navService =
+                        Provider.of<NavigationService>(context, listen: false);
+
+                    // ✅ === PERBAIKAN UTAMA ADA DI SINI === ✅
+                    //
+                    // Kita paksa listener di MainPage untuk berjalan dengan cara beralih ke
+                    // index sementara (0) lalu langsung kembali ke index tujuan (4).
+                    // Ini memastikan fungsi _onTabChange di MainPage terpanggil dan
+                    // navbar yang mungkin tersembunyi karena scroll, akan muncul lagi.
+                    //
+                    navService.setIndex(
+                        0); // 1. Beralih SEMENTARA untuk memicu perubahan.
+                    navService.setIndex(
+                        4); // 2. Langsung set ke tujuan AKHIR (Akun Page).
+
+                    // 3. Tutup semua halaman pendaftaran dan kembali ke MainPage.
+                    Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF859F3D),
@@ -69,6 +67,7 @@ class PendaftaranSuksesPage extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
+                    elevation: 3,
                   ),
                   child: Text(
                     'Selesai',
