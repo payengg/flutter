@@ -15,6 +15,8 @@ class SelectAddressPage extends StatefulWidget {
 
 class _SelectAddressPageState extends State<SelectAddressPage> {
   late int _selectedAddressId;
+  // Warna Hijau Utama sesuai request
+  final Color _primaryGreen = const Color(0xFF389841);
 
   // Data dummy untuk daftar alamat
   final List<Address> _addresses = [
@@ -22,7 +24,7 @@ class _SelectAddressPageState extends State<SelectAddressPage> {
       id: 1,
       street: 'Jalan Menuju Tuhan, Bandar Lampung',
       city: 'Lampung, 80228',
-      recipientName: 'Dexter Morgan',
+      recipientName: 'Nabila Defany',
       phoneNumber: '+62 851 8819 0911',
       tag: 'Rumah',
     ),
@@ -30,7 +32,7 @@ class _SelectAddressPageState extends State<SelectAddressPage> {
       id: 2,
       street: 'Jalan Menuju Langit, Bandar Lampung',
       city: 'Lampung, 80228',
-      recipientName: 'Dexter Morgan',
+      recipientName: 'Nabila Defany',
       phoneNumber: '+62 851 8819 0911',
       tag: 'Kantor',
     ),
@@ -38,7 +40,7 @@ class _SelectAddressPageState extends State<SelectAddressPage> {
       id: 3,
       street: 'Jalan WayHalim, Bandarlampung',
       city: 'Lampung, 80228',
-      recipientName: 'Dexter Morgan',
+      recipientName: 'Nabila Defany',
       phoneNumber: '+62 851 8819 0911',
       tag: 'Toko',
     ),
@@ -50,24 +52,31 @@ class _SelectAddressPageState extends State<SelectAddressPage> {
     _selectedAddressId = widget.currentAddressId;
   }
 
-  void _onAddressSelected(Address address) {
-    // Kirim data alamat yang dipilih kembali ke halaman checkout
-    Navigator.of(context).pop(address);
+  void _onAddressSelected(int id) {
+    setState(() {
+      _selectedAddressId = id;
+    });
   }
 
-  // ✅ 1. Buat fungsi async untuk navigasi dan menerima alamat baru
+  void _saveAndPop() {
+    // Cari object Address berdasarkan ID yang dipilih
+    final selectedAddress = _addresses.firstWhere(
+      (element) => element.id == _selectedAddressId,
+      orElse: () => _addresses[0],
+    );
+    // Kembalikan data alamat ke halaman sebelumnya (Checkout)
+    Navigator.of(context).pop(selectedAddress);
+  }
+
   void _navigateAndAddLocation() async {
-    // Tunggu hasil (alamat baru) dari SetLocationPage
     final newAddress = await Navigator.push<Address>(
       context,
       MaterialPageRoute(builder: (context) => const SetLocationPage()),
     );
 
-    // Jika ada alamat baru yang dikirim kembali, tambahkan ke daftar
     if (newAddress != null) {
       setState(() {
         _addresses.add(newAddress);
-        // Otomatis pilih alamat yang baru ditambahkan
         _selectedAddressId = newAddress.id;
       });
     }
@@ -76,148 +85,251 @@ class _SelectAddressPageState extends State<SelectAddressPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF9F9F9),
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new,
+              color: Colors.black, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'Pilih Alamat',
           style: GoogleFonts.poppins(
-              color: Colors.black, fontWeight: FontWeight.bold),
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: _addresses.length,
-                itemBuilder: (context, index) {
-                  final address = _addresses[index];
-                  return _buildAddressCard(address);
-                },
-              ),
+      body: Column(
+        children: [
+          // List Alamat
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _addresses.length,
+              itemBuilder: (context, index) {
+                final address = _addresses[index];
+                return _buildAddressCard(address);
+              },
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                // ✅ 2. Panggil fungsi navigasi yang baru
-                onPressed: _navigateAndAddLocation,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF859F3D),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+          ),
+
+          // Bagian Tombol Bawah
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Tombol Tambah Lokasi
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _navigateAndAddLocation,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _primaryGreen, // ✅ Warna Hijau 389841
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Tambah Lokasi',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-                child: Text(
-                  'Tambah Lokasi',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                const SizedBox(height: 12),
+                // Tombol Simpan
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _saveAndPop,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _primaryGreen, // ✅ Warna Hijau 389841
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Simpan',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(height: 16),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildAddressCard(Address address) {
     final bool isSelected = _selectedAddressId == address.id;
+
     return GestureDetector(
-      onTap: () => _onAddressSelected(address),
+      onTap: () => _onAddressSelected(address.id),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
-          border: isSelected
-              ? Border.all(color: const Color(0xFF859F3D), width: 1.5)
-              : null,
+          border: Border.all(
+            // ✅ Border Hijau jika dipilih
+            color: isSelected ? _primaryGreen : Colors.grey.shade200,
+            width: isSelected ? 1.5 : 1,
+          ),
+          boxShadow: [
+            if (!isSelected)
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.05),
+                spreadRadius: 1,
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              ),
+          ],
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 20,
-              height: 20,
-              margin: const EdgeInsets.only(top: 2, right: 12),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF859F3D)
-                        : Colors.grey.shade400,
-                    width: 1.5),
-              ),
-              child: isSelected
-                  ? Center(
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFF859F3D),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Radio Button Custom
+                Container(
+                  width: 20,
+                  height: 20,
+                  margin: const EdgeInsets.only(top: 2, right: 12),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected ? _primaryGreen : Colors.black54,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: isSelected
+                      ? Center(
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _primaryGreen, // ✅ Dot Hijau
+                            ),
+                          ),
+                        )
+                      : null,
+                ),
+
+                // Info Alamat
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Alamat Pengiriman',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                          // Tombol Ubah
+                          Text(
+                            'Ubah',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: _primaryGreen, // ✅ Teks Ubah Hijau
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${address.street}, ${address.city}',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Colors.black,
+                          height: 1.4,
                         ),
                       ),
-                    )
-                  : null,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Alamat Pengiriman',
+                      const SizedBox(height: 8),
+                      RichText(
+                        text: TextSpan(
                           style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey)),
-                      Text('Ubah',
+                            fontSize: 12,
+                            color: Colors.black,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: address.recipientName,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            TextSpan(
+                              text: '  •  ${address.phoneNumber}',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Tag Rumah/Kantor
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          // ✅ Background Tag Hijau Muda
+                          color: const Color(0xFFF0F9EB),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          address.tag,
                           style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF859F3D))),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                Colors.black87, // Teks tag hitam agar kontras
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Text('${address.street}, ${address.city}',
-                      style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold, height: 1.4)),
-                  const SizedBox(height: 8),
-                  Text(
-                      '${address.recipientName}   •   ${address.phoneNumber}',
-                      style: GoogleFonts.poppins(
-                          color: Colors.grey[600], fontSize: 12)),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(5)),
-                    child: Text(address.tag,
-                        style: GoogleFonts.poppins(
-                            fontSize: 12, fontWeight: FontWeight.w500)),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
           ],
         ),
       ),

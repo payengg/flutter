@@ -354,7 +354,8 @@ class _LoginPagesState extends State<LoginPages> {
           },
           child: Text(
             'Lupa Password?',
-            style: GoogleFonts.poppins(color: const Color(0xFF859F3D)),
+            // UBAH WARNA TEXT JADI BLACK
+            style: GoogleFonts.poppins(color: Colors.black),
           ),
         ),
       ],
@@ -372,11 +373,13 @@ class _LoginPagesState extends State<LoginPages> {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF859F3D),
+          // UBAH WARNA TOMBOL MENJADI 0xFF389841
+          backgroundColor: const Color(0xFF389841),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          disabledBackgroundColor: const Color(0xFF859F3D).withOpacity(0.5),
+          // Sesuaikan warna disabled juga agar konsisten
+          disabledBackgroundColor: const Color(0xFF389841).withOpacity(0.5),
         ),
         child: child ??
             Text(

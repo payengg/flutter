@@ -133,9 +133,6 @@ class _DashboardPagesState extends State<DashboardPages> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // ✅ PERBAIKAN: Hapus widget Scaffold yang tidak perlu.
-    // Sekarang, halaman ini hanya mengembalikan konten yang akan
-    // ditempatkan di dalam Scaffold dari MainPage.
     return SingleChildScrollView(
       controller: widget.controller,
       child: ConstrainedBox(
@@ -146,6 +143,21 @@ class _DashboardPagesState extends State<DashboardPages> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
+
+            // --- BAGIAN TEKS SELAMAT DATANG (Updated Font Size) ---
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+              child: Text(
+                'Selamat Datang ${widget.user.name}!',
+                style: GoogleFonts.poppins(
+                  fontSize: 14, // ✅ DIUBAH JADI 16 (Lebih kecil)
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1D1617),
+                ),
+              ),
+            ),
+            // ------------------------------------------------------
+
             _buildPromoBanner(),
             _buildSearchBar(),
             _buildCategorySection(),
@@ -163,42 +175,74 @@ class _DashboardPagesState extends State<DashboardPages> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 70, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 60, 16, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Text(
-                'Dikirim ke',
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Color(0xFF859F3D),
-                    size: 18,
+              if (Navigator.canPop(context))
+                Container(
+                  height: 40,
+                  width: 40,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        spreadRadius: 1,
+                        blurRadius: 5,
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new,
+                        color: Colors.black, size: 18),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+
+              // Informasi Lokasi
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    'Dexter\'s Home',
+                    'Dikirim ke',
                     style: GoogleFonts.poppins(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontSize: 12,
                     ),
                   ),
-                  const Icon(Icons.arrow_drop_down, color: Colors.black),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: Color(0xFF389841),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Rumah',
+                        style: GoogleFonts.poppins(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const Icon(Icons.arrow_drop_down, color: Colors.black),
+                    ],
+                  ),
                 ],
               ),
             ],
           ),
+
+          // Tombol Keranjang
           Container(
             height: 45,
             width: 45,
@@ -220,7 +264,7 @@ class _DashboardPagesState extends State<DashboardPages> {
                   MaterialPageRoute(builder: (context) => const CartPage()),
                 );
               },
-              icon: Image.asset('assets/images/shopping_bag.png', height: 22),
+              icon: Image.asset('assets/images/keranjang_home.png', height: 24),
             ),
           ),
         ],
@@ -231,7 +275,7 @@ class _DashboardPagesState extends State<DashboardPages> {
   Widget _buildPromoBanner() {
     if (_isBannersLoading) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
         child: Container(
           height: 150,
           width: double.infinity,
@@ -269,7 +313,7 @@ class _DashboardPagesState extends State<DashboardPages> {
       );
     }
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 30, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,
@@ -377,6 +421,7 @@ class _DashboardPagesState extends State<DashboardPages> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
+                  color: Colors.black,
                 ),
               ),
               InkWell(
@@ -393,14 +438,14 @@ class _DashboardPagesState extends State<DashboardPages> {
                     Text(
                       'Lihat semua',
                       style: GoogleFonts.poppins(
-                        color: const Color(0xFF31511E),
+                        color: Colors.black,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(width: 4),
                     const Icon(
                       Icons.arrow_forward_ios,
-                      color: Color(0xFF61AD4E),
+                      color: Colors.black,
                       size: 17,
                     ),
                   ],

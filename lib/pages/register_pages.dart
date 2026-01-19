@@ -270,7 +270,7 @@ class _RegisterPagesState extends State<RegisterPages> {
     );
   }
 
-  // --- WIDGET BUILDER METHODS (Sudah dimodifikasi untuk TextFormField) ---
+  // --- WIDGET BUILDER METHODS ---
 
   Widget _buildLoginTabs() {
     return Container(
@@ -415,8 +415,10 @@ class _RegisterPagesState extends State<RegisterPages> {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF859F3D),
-          disabledBackgroundColor: const Color(0xFF859F3D).withOpacity(0.5),
+          // --- UBAH WARNA TOMBOL DISINI ---
+          backgroundColor: const Color(0xFF389841),
+          // --------------------------------
+          disabledBackgroundColor: const Color(0xFF389841).withOpacity(0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

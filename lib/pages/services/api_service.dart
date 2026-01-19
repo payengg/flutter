@@ -1,8 +1,12 @@
 // File: lib/pages/services/api_service.dart
 
 import 'dart:convert';
+<<<<<<< HEAD
 import 'package:http/http.dart'
     as http; // Masih diperlukan untuk updateProfile dan fetchUser
+=======
+import 'package:http/http.dart' as http;
+>>>>>>> 27f823c514beaffddb5177255c7eeab7585d42e7
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:terraserve_app/pages/models/user.dart';
@@ -10,17 +14,19 @@ import 'package:dio/dio.dart';
 import 'package:terraserve_app/pages/models/application_data.dart';
 
 class ApiService {
-  static final String baseUrl = dotenv.env['API_URL'] ?? 'http://localhost/api';
-  static final storage = FlutterSecureStorage();
-  static final Dio dio = Dio(); // Inisialisasi Dio untuk digunakan dalam class
+  // Ganti URL sesuai konfigurasi backend kamu (localhost untuk emulator biasanya 10.0.2.2)
+  static final String baseUrl =
+      dotenv.env['API_URL'] ?? 'http://10.0.2.2:8000/api';
 
-  // Metode yang sudah ada untuk update profil (TIDAK ADA PERUBAHAN)
+  static final storage = FlutterSecureStorage();
+  static final Dio dio = Dio();
+
+  // 1. UPDATE PROFILE (Sudah diperbaiki jumlah parameternya)
   static Future<bool> updateProfile(
     String name,
     String email,
     String phone,
-    String gender,
-    String birthdate,
+    String address,
     String token,
   ) async {
     final url = Uri.parse('$baseUrl/user');
@@ -37,8 +43,7 @@ class ApiService {
           'name': name,
           'email': email,
           'phone': phone,
-          'gender': gender,
-          'birthdate': birthdate,
+          'address': address, // Mengirim alamat ke backend
         }),
       );
 
@@ -56,45 +61,57 @@ class ApiService {
     }
   }
 
-  // Metode yang sudah ada untuk mengambil data user (TIDAK ADA PERUBAHAN)
+  // 2. FETCH USER (DENGAN DEBUGGING / MATA-MATA)
   static Future<User?> fetchUser(String token) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/user'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
-    );
+    final url = Uri.parse('$baseUrl/user');
 
-    if (response.statusCode == 200 && response.body.isNotEmpty) {
-      final jsonMap = json.decode(response.body);
-      if (jsonMap.containsKey('data')) {
-        return User.fromJson(jsonMap['data']);
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      // 🔥🔥 DEBUGGING: LIHAT DATA MENTAH DARI SERVER DISINI 🔥🔥
+      print("==========================================");
+      print("STATUS CODE: ${response.statusCode}");
+      print("RAW BODY API: ${response.body}");
+      print("==========================================");
+
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        final jsonMap = json.decode(response.body);
+        if (jsonMap.containsKey('data')) {
+          // Parsing JSON ke Model User
+          return User.fromJson(jsonMap['data']);
+        } else {
+          print('Unexpected response format: $jsonMap');
+          return null;
+        }
       } else {
-        print('Unexpected response format: $jsonMap');
+        print('Failed to fetch user: ${response.body}');
         return null;
       }
-    } else {
-      print('Failed to fetch user: ${response.body}');
+    } catch (e) {
+      print("Error fetching user: $e");
       return null;
     }
   }
 
-  // Metode BARU untuk mengirim data pendaftaran petani dengan DIO
+  // 3. SUBMIT FARMER APPLICATION (Menggunakan DIO untuk upload file)
   static Future<Map<String, dynamic>> submitFarmerApplication(
     FarmerApplicationData data,
     String token,
   ) async {
     final uri = '$baseUrl/farmer-applications';
 
+    // Debugging path file sebelum upload
     print('--- Debugging File Paths ---');
     print('ktpPhoto: ${data.ktpPhoto?.path}');
     print('facePhoto: ${data.facePhoto?.path}');
     print('farmPhoto: ${data.farmPhoto?.path}');
     print('storeLogo: ${data.storeLogo?.path}');
-    data.products.asMap().forEach((index, product) {
-      print('product[$index] photo: ${product.photo?.path}');
-    });
     print('--- End Debug ---');
 
     final formData = FormData();
@@ -163,17 +180,13 @@ class ApiService {
       print('Body: ${response.data}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('Pendaftaran petani berhasil dikirim.');
-        // ✅ PERBAIKAN DI SINI: Kembalikan respons yang berhasil
         return response.data;
       } else {
-        // ✅ PERBAIKAN DI SINI: Jika status code tidak berhasil, lempar exception
         throw Exception(
             response.data?['message'] ?? 'Gagal mengirim pendaftaran.');
       }
     } on DioException catch (e) {
       print('Exception during submitFarmerApplication: ${e.response?.data}');
-      // Jika ada respons dari server, gunakan pesan errornya
       if (e.response != null && e.response!.data != null) {
         throw Exception(
             e.response!.data['message'] ?? 'Terjadi kesalahan pada server.');

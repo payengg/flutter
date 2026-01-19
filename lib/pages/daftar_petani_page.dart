@@ -2,11 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// ⬇️ 1. TAMBAHKAN IMPORT INI
 import 'package:terraserve_app/pages/verifikasi_identitas_page.dart';
 
 class DaftarPetaniPage extends StatelessWidget {
   const DaftarPetaniPage({super.key});
+
+  // ✅ Tentukan warna utama yang diminta
+  final Color _primaryGreen = const Color(0xFF389841);
 
   @override
   Widget build(BuildContext context) {
@@ -25,28 +27,29 @@ class DaftarPetaniPage extends StatelessWidget {
                     'PROGRAM SUKSES PETANI CERDAS',
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16, // Ukuran font disesuaikan agar konsisten
-                      color: const Color(0xFF859F3D),
+                      fontSize: 16,
+                      // ✅ Ubah warna judul agar konsisten
+                      color: _primaryGreen,
                       letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 12),
                   _buildFeatureCard(
-                    imageAsset: 'assets/images/icon_lapak.png',
+                    imageAsset: 'assets/images/ic_lapak.png',
                     title: 'Gratis Buka Lapak',
                     description:
                         'Buka lapak Pertanianmu dan mulai jual hasil panen langsung ke konsumen',
                   ),
                   const SizedBox(height: 16),
                   _buildFeatureCard(
-                    imageAsset: 'assets/images/icon_usaha.png',
+                    imageAsset: 'assets/images/ic_usaha.png',
                     title: 'Dukungan Usaha Petani Baru',
                     description:
                         'Dapatkan dukungan berupa subsidi ongkir atau pelatihan digital.',
                   ),
                   const SizedBox(height: 16),
                   _buildFeatureCard(
-                    imageAsset: 'assets/images/icon_distribusi.png',
+                    imageAsset: 'assets/images/ic_distribusi.png',
                     title: 'Distribusi Wilayah Lampung',
                     description:
                         'Jangkau pembeli dari berbagai daerah di Provinsi Lampung tanpa repot urus logistik.',
@@ -57,7 +60,6 @@ class DaftarPetaniPage extends StatelessWidget {
           ),
         ],
       ),
-      // ⬇️ 2. BERIKAN 'context' DI SINI
       bottomNavigationBar: _buildBottomButton(context),
     );
   }
@@ -67,6 +69,7 @@ class DaftarPetaniPage extends StatelessWidget {
       backgroundColor: Colors.transparent,
       expandedHeight: 250,
       leading: IconButton(
+        // ✅ Ubah warna icon panah menjadi putih agar kontras dengan banner
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.of(context).pop(),
       ),
@@ -75,7 +78,7 @@ class DaftarPetaniPage extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             Image.asset(
-              'assets/images/farmer_banner.png',
+              'assets/images/ic_banner.png',
               fit: BoxFit.cover,
             ),
             Container(
@@ -88,18 +91,16 @@ class DaftarPetaniPage extends StatelessWidget {
               ),
             ),
             Padding(
-              // Padding atas disesuaikan agar tidak terlalu jauh
               padding: const EdgeInsets.fromLTRB(24, 80, 24, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                // MainAxisAlignment diubah agar teks tidak menempel di atas
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
                     'Mulai Jual Hasil\nPertanianmu Sekarang!',
                     style: GoogleFonts.poppins(
                       color: Colors.white,
-                      fontSize: 24, // Ukuran font disesuaikan
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       height: 1.3,
                     ),
@@ -164,7 +165,8 @@ class DaftarPetaniPage extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 14),
+                  style: GoogleFonts.poppins(
+                      color: Colors.grey[600], fontSize: 14),
                 ),
               ],
             ),
@@ -174,10 +176,8 @@ class DaftarPetaniPage extends StatelessWidget {
     );
   }
 
-  // ⬇️ 3. TERIMA 'context' DI SINI
   Widget _buildBottomButton(BuildContext context) {
     return Padding(
-      // Padding bawah disesuaikan agar tombol tidak terlalu menempel ke bawah
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: ElevatedButton(
         onPressed: () {
@@ -188,7 +188,8 @@ class DaftarPetaniPage extends StatelessWidget {
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF859F3D),
+          // ✅ Ubah backgroundColor menjadi warna hijau yang diminta
+          backgroundColor: _primaryGreen,
           minimumSize: const Size(double.infinity, 55),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),

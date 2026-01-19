@@ -3,15 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:terraserve_app/pages/models/bank_model.dart';
-import 'package:terraserve_app/pages/models/cart_item_model.dart'; // <-- PERUBAHAN 1: Tambahkan import ini
+import 'package:terraserve_app/pages/models/cart_item_model.dart';
 import 'package:terraserve_app/pages/payment_details_page.dart';
 
 class PaymentMethodPage extends StatefulWidget {
-  final List<CartItem> cartItems; // <-- PERUBAHAN 2: Tambahkan variabel ini
+  final List<CartItem> cartItems;
 
   const PaymentMethodPage({
     super.key,
-    required this.cartItems, // <-- PERUBAHAN 3: Perbarui constructor
+    required this.cartItems,
   });
 
   @override
@@ -48,7 +48,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             MaterialPageRoute(
               builder: (context) => PaymentDetailsPage(
                 selectedBank: _selectedBank!,
-                cartItems: widget.cartItems, // Menggunakan data yang diterima
+                cartItems: widget.cartItems,
               ),
             ),
           );
@@ -185,7 +185,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
       ),
       trailing: isSelected
-          ? const Icon(Icons.check_circle, color: Color(0xFF859F3D))
+          ? const Icon(Icons.check_circle,
+              color: Color(0xFF389841)) // Checkmark Hijau
           : null,
     );
   }
@@ -210,7 +211,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
         child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF859F3D),
+            // ✅ UBAH WARNA TOMBOL DISINI KE 0xFF389841
+            backgroundColor: const Color(0xFF389841),
             minimumSize: const Size(double.infinity, 55),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:terraserve_app/pages/login_pages.dart';
+import 'login_pages.dart'; // Navigasi akhir ke LoginPages
 
 class IntroPages2 extends StatelessWidget {
   const IntroPages2({super.key});
@@ -44,11 +44,15 @@ class IntroPages2 extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 40),
+
+                  // --- TOMBOL BELANJA SEKARANG DIPERKECIL ---
                   SizedBox(
-                    width: double.infinity,
-                    height: 50,
+                    // Width dan height diatur lebih kecil dari sebelumnya
+                    width: 250,
+                    height: 45,
                     child: ElevatedButton(
                       onPressed: () {
+                        // Selesai Intro -> Masuk Login
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -57,7 +61,7 @@ class IntroPages2 extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF859F3D),
+                        backgroundColor: const Color(0xFF389841),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -72,6 +76,7 @@ class IntroPages2 extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // -----------------------------------------
                 ],
               ),
             ),
@@ -95,6 +100,7 @@ class IntroPages2 extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // Indikator Halaman 3 (Rectangle di kanan)
                       Image.asset('assets/images/Ellipse 1.png', height: 8),
                       const SizedBox(width: 6),
                       Image.asset('assets/images/Ellipse 2.png', height: 8),
@@ -103,6 +109,8 @@ class IntroPages2 extends StatelessWidget {
                         'assets/images/Rectangle 3.png',
                         height: 8,
                         width: 27,
+                        // Opsional: Jika indikator aktif juga mau diubah warnanya
+                        // color: const Color(0xFF389841),
                       ),
                     ],
                   ),

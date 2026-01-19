@@ -2,97 +2,187 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:terraserve_app/pages/models/order_model.dart';
 import 'package:terraserve_app/providers/order_provider.dart';
-import 'package:terraserve_app/pages/order_tracking_page.dart'; // <-- 1. TAMBAHKAN IMPORT INI
-
-// Enum dan Class Order sudah dipindahkan ke file model sendiri
+import 'package:terraserve_app/pages/order_detail_page.dart';
 
 class PesananPage extends StatefulWidget {
-  // ✅ 1. TAMBAHKAN VARIABEL UNTUK MENERIMA CONTROLLER
   final ScrollController? controller;
+  // Callback untuk kembali ke Dashboard (MainPage Index 0)
+  final VoidCallback? backToDashboard;
 
-  const PesananPage({super.key, this.controller}); // ✅ 2. PERBARUI CONSTRUCTOR
+  const PesananPage({
+    super.key,
+    this.controller,
+    this.backToDashboard,
+  });
 
   @override
   State<PesananPage> createState() => _PesananPageState();
 }
 
-// ✅ 3. TAMBAHKAN SingleTickerProviderStateMixin UNTUK TAB CONTROLLER
-class _PesananPageState extends State<PesananPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _PesananPageState extends State<PesananPage> {
+  int _selectedIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    // Inisialisasi TabController di sini
-    _tabController = TabController(length: 3, vsync: this);
-  }
+  final List<String> _statuses = [
+    'Diproses',
+    'Dikemas',
+    'Dikirim',
+    'Selesai',
+    'Dibatalkan'
+  ];
 
-  @override
-  void dispose() {
-    _tabController.dispose(); // Hapus controller saat widget dihancurkan
-    super.dispose();
-  }
+  final List<String> _icons = [
+    'diproses.png',
+    'dikemas.png',
+    'dikirim.png',
+    'selesai.png',
+    'dibatalkan.png',
+  ];
 
   @override
   Widget build(BuildContext context) {
     final orderProvider = Provider.of<OrderProvider>(context);
 
-    final processedOrders = orderProvider.orders
-        .where((o) => o.status == OrderStatus.diproses)
-        .toList();
-    final shippedOrders = orderProvider.orders
-        .where((o) => o.status == OrderStatus.terkirim)
-        .toList();
-    final canceledOrders = orderProvider.orders
-        .where((o) => o.status == OrderStatus.dibatalkan)
-        .toList();
+    // Filter Logic
+    List<Order> filteredOrders = [];
+    switch (_selectedIndex) {
+      case 0:
+        filteredOrders = orderProvider.orders
+            .where((o) => o.status == OrderStatus.diproses)
+            .toList();
+        break;
+      case 1:
+        filteredOrders = orderProvider.orders
+            .where((o) => o.status == OrderStatus.dikemas)
+            .toList();
+        break;
+      case 2:
+        filteredOrders = orderProvider.orders
+            .where((o) => o.status == OrderStatus.terkirim)
+            .toList();
+        break;
+      case 3:
+        filteredOrders = orderProvider.orders
+            .where((o) => o.status == OrderStatus.selesai)
+            .toList();
+        break;
+      case 4:
+        filteredOrders = orderProvider.orders
+            .where((o) => o.status == OrderStatus.dibatalkan)
+            .toList();
+        break;
+    }
 
-    // Hapus DefaultTabController karena kita sudah manual
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.grey[100],
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: false,
+        // ✅ PERBAIKAN LOGIKA TOMBOL BACK
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new,
+              color: Colors.black, size: 20),
+          onPressed: () {
+            // Prioritas 1: Jalankan fungsi kembali ke Dashboard (Pindah Tab)
+            // Ini akan menjaga Navbar tetap ada karena hanya berpindah tab di MainPage
+            if (widget.backToDashboard != null) {
+              widget.backToDashboard!();
+            }
+            // Prioritas 2: Jika halaman ini tidak sengaja di-push (tanpa navbar), lakukan pop biasa
+            else if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          },
+        ),
         title: Text(
           'Pesanan',
           style: GoogleFonts.poppins(
             color: Colors.black,
             fontWeight: FontWeight.bold,
+            fontSize: 18,
           ),
-        ),
-        bottom: TabBar(
-          controller: _tabController, // ✅ 4. GUNAKAN TAB CONTROLLER
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          indicator: BoxDecoration(
-            color: const Color(0xFFE6F0D8),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          indicatorSize: TabBarIndicatorSize.tab,
-          labelColor: const Color(0xFF4B6028),
-          unselectedLabelColor: Colors.grey[600],
-          labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-          unselectedLabelStyle:
-              GoogleFonts.poppins(fontWeight: FontWeight.normal),
-          tabs: const [
-            Tab(text: 'Sedang Diproses'),
-            Tab(text: 'Terkirim'),
-            Tab(text: 'Dibatalkan'),
-          ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController, // ✅ 5. GUNAKAN TAB CONTROLLER
+      body: Column(
         children: [
-          _buildOrderList(processedOrders),
-          _buildOrderList(shippedOrders),
-          _buildOrderList(canceledOrders),
+          // Tab Status
+          Container(
+            height: 140,
+            color: Colors.white,
+            width: double.infinity,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
+              itemCount: _statuses.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 32),
+              itemBuilder: (context, index) {
+                return _buildTabItem(index);
+              },
+            ),
+          ),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+
+          // List Pesanan
+          Expanded(
+            child: Container(
+              color: const Color(0xFFF5F5F5),
+              child: _buildOrderList(filteredOrders),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabItem(int index) {
+    bool isSelected = _selectedIndex == index;
+    Color activeColor = const Color(0xFF389841);
+    Color inactiveColor = Colors.black54;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFFF0F9EB) : Colors.transparent,
+              shape: BoxShape.circle,
+            ),
+            child: Image.asset(
+              'assets/images/${_icons[index]}',
+              width: 45,
+              height: 45,
+              color: isSelected ? activeColor : inactiveColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _statuses[index],
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? activeColor : inactiveColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 3,
+            width: 50,
+            decoration: BoxDecoration(
+              color: isSelected ? activeColor : Colors.transparent,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          )
         ],
       ),
     );
@@ -101,198 +191,194 @@ class _PesananPageState extends State<PesananPage>
   Widget _buildOrderList(List<Order> orders) {
     if (orders.isEmpty) {
       return Center(
-          child: Text('Tidak ada pesanan di kategori ini',
-              style: GoogleFonts.poppins()));
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/logo_no_pesanan.png',
+              width: 150,
+              height: 150,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Belum ada pesanan',
+              style: GoogleFonts.poppins(color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      );
     }
     return ListView.separated(
-      // ✅ 6. GUNAKAN SCROLL CONTROLLER DARI MAIN_PAGE
       controller: widget.controller,
-      padding: const EdgeInsets.fromLTRB(
-          16, 16, 16, 100), // Padding bawah agar tidak tertutup nav bar
+      padding: const EdgeInsets.all(16),
       itemCount: orders.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         return _buildOrderCard(orders[index]);
       },
     );
   }
 
-  // Sisa kode (widget _buildOrderCard dan _buildCardFooter) di bawah ini tidak ada yang diubah sama sekali.
   Widget _buildOrderCard(Order order) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        borderRadius: BorderRadius.circular(15.0),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Pesanan Anda',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-              Text(order.id,
-                  style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12)),
-            ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OrderDetailPage(order: order),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image.network(
-                    order.imageUrl,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => const Icon(
-                        Icons.image_not_supported_outlined,
-                        size: 50,
-                        color: Colors.grey),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Pesanan Anda',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: Colors.black,
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(order.productName,
-                        style: GoogleFonts.poppins(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text(order.quantity,
-                        style: GoogleFonts.poppins(color: Colors.grey)),
-                    if (order.status == OrderStatus.dibatalkan &&
-                        order.price != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        NumberFormat.currency(
-                                locale: 'id_ID',
-                                symbol: 'Rp ',
-                                decimalDigits: 0)
-                            .format(order.price),
-                        style: GoogleFonts.poppins(
-                            color: const Color(0xFF859F3D),
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ]
-                  ],
+                Text(
+                  order.id,
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[400],
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Divider(),
-          const SizedBox(height: 8),
-          _buildCardFooter(order),
-        ],
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      order.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, e, s) => const Icon(
+                        Icons.image_not_supported_outlined,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        order.productName,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        "500gr", // Dummy Berat
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    _getStatusText(order.status),
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OrderDetailPage(order: order),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF389841),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    child: Text(
+                      'Lihat Detail',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildCardFooter(Order order) {
-    switch (order.status) {
+  String _getStatusText(OrderStatus status) {
+    switch (status) {
       case OrderStatus.diproses:
-        return Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Konfirmasi pesanan Anda segera setelah tiba.',
-                style:
-                    GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
-              ),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: () {
-                Provider.of<OrderProvider>(context, listen: false)
-                    .markOrderAsShipped(order);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF859F3D),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-              ),
-              child: Text('Pesanan diterima',
-                  style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500)),
-            ),
-            const SizedBox(width: 8),
-            OutlinedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const OrderTrackingPage()),
-                );
-              },
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.all(10),
-                side: BorderSide(color: Colors.grey[300]!),
-              ),
-              child: Image.asset('assets/images/gps_pesanan.png',
-                  width: 20, height: 20),
-            ),
-          ],
-        );
+        return 'Pesanan anda akan segera diproses.';
+      case OrderStatus.dikemas:
+        return 'Pesanan sedang dikemas oleh penjual.';
       case OrderStatus.terkirim:
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Text(
-                'Beri ulasan untuk produk yang telah sampai.',
-                style:
-                    GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
-              ),
-            ),
-            const SizedBox(width: 16),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF859F3D)),
-              child: Text('Tinggalkan ulasan',
-                  style:
-                      GoogleFonts.poppins(color: Colors.white, fontSize: 12)),
-            ),
-          ],
-        );
+        return 'Pesanan sedang dalam perjalanan.';
+      case OrderStatus.selesai:
+        return 'Pesanan telah diterima.';
       case OrderStatus.dibatalkan:
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Text(
-                'Pesanan telah dibatalkan oleh Anda.',
-                style:
-                    GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
-              ),
-            ),
-            const SizedBox(width: 16),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF859F3D)),
-              child: Text('Beli lagi',
-                  style:
-                      GoogleFonts.poppins(color: Colors.white, fontSize: 12)),
-            ),
-          ],
-        );
+        return 'Pesanan telah dibatalkan.';
+      default:
+        return 'Status pesanan diperbarui.';
     }
   }
 }

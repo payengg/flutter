@@ -72,9 +72,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           );
           // Kembali ke halaman login dan hapus semua halaman sebelumnya
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const ResetPasswordConfirmPage()),
+            MaterialPageRoute(
+                builder: (context) => const ResetPasswordConfirmPage()),
             (route) => false,
-          );  
+          );
         }
       } else {
         String errorMessage =
@@ -190,10 +191,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _resetPassword,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF859F3D),
-                      disabledBackgroundColor: const Color(
-                        0xFF859F3D,
-                      ).withOpacity(0.5),
+                      // --- UBAH WARNA TOMBOL DISINI ---
+                      backgroundColor: const Color(0xFF389841),
+                      disabledBackgroundColor:
+                          const Color(0xFF389841).withOpacity(0.5),
+                      // --------------------------------
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

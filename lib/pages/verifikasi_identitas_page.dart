@@ -61,7 +61,7 @@ class VerifikasiIdentitasPage extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF859F3D),
+                  backgroundColor: const Color(0xFF389841),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),

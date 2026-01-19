@@ -5,7 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:terraserve_app/pages/models/address_model.dart';
 import 'package:terraserve_app/pages/models/cart_item_model.dart';
+import 'package:terraserve_app/pages/schedule_delivery_page.dart';
 import 'package:terraserve_app/pages/select_address_page.dart';
+import 'package:terraserve_app/pages/shipping_options_page.dart';
 import 'package:terraserve_app/pages/services/cart_service.dart';
 import 'package:terraserve_app/pages/payment_method_page.dart';
 
@@ -18,6 +20,12 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   Address? _selectedAddress;
+  String _deliverySchedule = 'Sekarang';
+
+  // State for Shipping
+  String _shippingType = 'Standard';
+  double _shippingCost = 0;
+  String _shippingEta = '2 Jam';
 
   @override
   void initState() {
@@ -49,15 +57,59 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 
+  // Ensure this function is used if you want direct access to schedule page,
+  // otherwise the flow is through Shipping Options.
+  void _navigateToSchedulePage() async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ScheduleDeliveryPage(
+          currentSchedule: _deliverySchedule,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _deliverySchedule = result;
+      });
+    }
+  }
+
+  // ✅ Navigation Flow: Shipping Options -> Schedule -> Checkout
+  void _navigateToShippingOptions() async {
+    // The result will be a Map containing both courier and schedule info
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ShippingOptionsPage(
+          selectedService: _shippingType,
+          selectedSchedule: _deliverySchedule,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        // Update Shipping Info
+        final courier = result['courier'];
+        _shippingType = courier['name'];
+        _shippingCost = (courier['price'] as num).toDouble();
+        _shippingEta = _shippingType == 'Instant' ? '2 Jam' : '14-15 Agus';
+
+        // Update Schedule Info from the chained navigation
+        _deliverySchedule = result['schedule'];
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Di sini kita dengarkan perubahan agar UI update jika ada perubahan di cart
     final cartService = Provider.of<CartService>(context);
     const double biayaLayanan = 2000;
-    const double biayaPengiriman = 15000;
-    // totalPrice dari cartService sudah otomatis menghitung item yang dipilih saja
+
     final double totalPembayaran =
-        cartService.totalPrice + biayaLayanan + biayaPengiriman;
+        cartService.totalPrice + biayaLayanan + _shippingCost;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
@@ -88,16 +140,26 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 child: _buildAddressSection(),
               ),
               const SizedBox(height: 16),
-              _buildScheduleSection(),
+
+              // Direct access to schedule page (optional, based on your design preferences)
+              GestureDetector(
+                onTap: _navigateToSchedulePage,
+                child: _buildScheduleSection(),
+              ),
               const SizedBox(height: 24),
-              _buildDeliveryDurationSection(),
+
+              // ✅ Trigger the flow: Shipping Options -> Schedule
+              GestureDetector(
+                onTap: _navigateToShippingOptions,
+                child: _buildDeliveryDurationSection(),
+              ),
+
               const SizedBox(height: 24),
-              // PERUBAHAN 1: Tampilkan ringkasan dari item yang dipilih
               _buildOrderSummary(cartService.selectedItems),
               const SizedBox(height: 24),
               _buildPaymentSummary(
-                  cartService, biayaLayanan, biayaPengiriman, totalPembayaran),
-              const SizedBox(height: 100), // Ruang untuk tombol bawah
+                  cartService, biayaLayanan, _shippingCost, totalPembayaran),
+              const SizedBox(height: 100),
             ],
           ),
         ),
@@ -105,6 +167,30 @@ class _CheckoutPageState extends State<CheckoutPage> {
       bottomSheet: _buildBottomButton(context, cartService.selectedItems),
     );
   }
+
+  // ... (Rest of the widgets: _buildOrderSummary, _buildBottomButton, _buildAddressSection, _buildScheduleSection, _buildDeliveryDurationSection, _buildPaymentSummary, _buildSummaryRow, _buildSectionCard, DashedDivider)
+  // Ensure _buildScheduleSection uses _deliverySchedule variable
+
+  Widget _buildScheduleSection() {
+    return _buildSectionCard(
+      child: Row(
+        children: [
+          const Icon(Icons.schedule, color: Color(0xFF389841)),
+          const SizedBox(width: 8),
+          Text('Jadwal pengiriman',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+          const Spacer(),
+          Text(_deliverySchedule,
+              style: GoogleFonts.poppins(color: Colors.grey[600])),
+          const SizedBox(width: 8),
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        ],
+      ),
+    );
+  }
+
+  // Other widgets remain the same as previously provided...
+  // Place _buildOrderSummary, _buildBottomButton, etc. here.
 
   Widget _buildOrderSummary(List<CartItem> selectedItems) {
     return _buildSectionCard(
@@ -134,7 +220,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                               color: Colors.grey, fontSize: 12)),
                       Text('Rp${item.product.price.toStringAsFixed(0)}',
                           style: GoogleFonts.poppins(
-                              color: const Color(0xFF61AD4E),
+                              color: const Color(0xFF389841),
                               fontWeight: FontWeight.bold)),
                     ],
                   ),
@@ -156,7 +242,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       child: ElevatedButton(
-        // PERUBAHAN 2: Kirim data item yang dipilih ke halaman selanjutnya
         onPressed: () {
           if (selectedItems.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -170,13 +255,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
             context,
             MaterialPageRoute(
               builder: (context) => PaymentMethodPage(
-                cartItems: selectedItems, // <-- DATA DIKIRIM DI SINI
+                cartItems: selectedItems,
               ),
             ),
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF859F3D),
+          backgroundColor: const Color(0xFF389841),
           minimumSize: const Size(double.infinity, 55),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
@@ -194,8 +279,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  // Sisa widget lain (_buildAddressSection, _buildPaymentSummary, dll) tidak perlu diubah
-  // ... (salin sisa widget Anda yang lain ke sini)
   Widget _buildAddressSection() {
     if (_selectedAddress == null) return const SizedBox.shrink();
     final address = _selectedAddress!;
@@ -206,7 +289,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         children: [
           const Padding(
             padding: EdgeInsets.only(top: 2.0),
-            child: Icon(Icons.location_on_outlined, color: Color(0xFF859F3D)),
+            child: Icon(Icons.location_on_outlined, color: Color(0xFF389841)),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -230,7 +313,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       TextSpan(
-                        text: '   •   ${address.phoneNumber}',
+                        text: '   •   ${address.phoneNumber}',
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                     ],
@@ -250,7 +333,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     borderRadius: BorderRadius.circular(5)),
                 child: Text(address.tag,
                     style: GoogleFonts.poppins(
-                        color: const Color(0xFF859F3D),
+                        color: const Color(0xFF389841),
                         fontSize: 12,
                         fontWeight: FontWeight.w500)),
               ),
@@ -258,23 +341,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
               const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
             ],
           )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScheduleSection() {
-    return _buildSectionCard(
-      child: Row(
-        children: [
-          const Icon(Icons.schedule, color: Color(0xFF859F3D)),
-          const SizedBox(width: 8),
-          Text('Jadwal pengiriman',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-          const Spacer(),
-          Text('Sekarang', style: GoogleFonts.poppins(color: Colors.grey[600])),
-          const SizedBox(width: 8),
-          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
         ],
       ),
     );
@@ -295,21 +361,33 @@ class _CheckoutPageState extends State<CheckoutPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Standard',
+                  Text(_shippingType, // Tampilkan Standard / Instant
                       style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                  Text('Gratis',
-                      style: GoogleFonts.poppins(
-                          color: Colors.grey[600], fontSize: 12)),
+                  Text(
+                    _shippingCost == 0
+                        ? 'Gratis'
+                        : 'Rp${_shippingCost.toStringAsFixed(0)}', // Tampilkan Harga
+                    style: GoogleFonts.poppins(
+                        color: Colors.grey[600], fontSize: 12),
+                  ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(5)),
-                child: Text('2 Jam',
-                    style: GoogleFonts.poppins(
-                        fontSize: 12, fontWeight: FontWeight.w500)),
+              Row(
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(5)),
+                    child: Text(_shippingEta, // Tampilkan ETA
+                        style: GoogleFonts.poppins(
+                            fontSize: 12, fontWeight: FontWeight.w500)),
+                  ),
+                  const SizedBox(width: 12),
+                  const Icon(Icons.arrow_forward_ios,
+                      size: 16, color: Colors.grey),
+                ],
               ),
             ],
           ),
@@ -331,7 +409,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           _buildSummaryRow('Biaya pengiriman', pengiriman),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12.0),
-            child: DashedDivider(),
+            child: Divider(color: Colors.grey, thickness: 0.5),
           ),
           _buildSummaryRow('Total', total, isTotal: true),
         ],
@@ -354,7 +432,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           'Rp${value.toStringAsFixed(0)}',
           style: GoogleFonts.poppins(
             fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            color: isTotal ? const Color(0xFF61AD4E) : Colors.black,
+            color: isTotal ? const Color(0xFF389841) : Colors.black,
           ),
         ),
       ],
@@ -371,37 +449,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
         borderRadius: BorderRadius.circular(15),
       ),
       child: child,
-    );
-  }
-}
-
-class DashedDivider extends StatelessWidget {
-  const DashedDivider({super.key, this.height = 1, this.color = Colors.grey});
-  final double height;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final boxWidth = constraints.constrainWidth();
-        const dashWidth = 5.0;
-        final dashHeight = height;
-        final dashCount = (boxWidth / (2 * dashWidth)).floor();
-        return Flex(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          direction: Axis.horizontal,
-          children: List.generate(dashCount, (_) {
-            return SizedBox(
-              width: dashWidth,
-              height: dashHeight,
-              child: DecoratedBox(
-                decoration: BoxDecoration(color: color),
-              ),
-            );
-          }),
-        );
-      },
     );
   }
 }

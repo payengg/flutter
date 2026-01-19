@@ -17,6 +17,9 @@ class FormIdentitasPage extends StatefulWidget {
 class _FormIdentitasPageState extends State<FormIdentitasPage> {
   final _formKey = GlobalKey<FormState>();
 
+  // ✅ Definisikan warna utama di sini agar mudah diubah
+  final Color _primaryGreen = const Color(0xFF389841);
+
   late final TextEditingController _namaController;
   late final TextEditingController _nikController;
   late final TextEditingController _alamatController;
@@ -30,7 +33,6 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
   @override
   void initState() {
     super.initState();
-    // Mengambil data dari provider jika sudah ada (untuk kasus edit atau kembali)
     final provider =
         Provider.of<FarmerApplicationProvider>(context, listen: false);
     _namaController =
@@ -120,7 +122,6 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
     final provider =
         Provider.of<FarmerApplicationProvider>(context, listen: false);
 
-    // Memperbarui provider dengan semua data dari form ini
     provider.updatePersonalData(
       fullName: _namaController.text,
       nik: _nikController.text,
@@ -131,7 +132,6 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
       facePhoto: _fotoWajah!,
     );
 
-    // Navigasi ke halaman selanjutnya
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const InformasiTokoPage()),
@@ -233,7 +233,8 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
       child: ElevatedButton(
         onPressed: _submitForm,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF859F3D),
+          // ✅ UBAH WARNA TOMBOL KE 389841
+          backgroundColor: _primaryGreen,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
@@ -286,7 +287,8 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF859F3D)),
+                // ✅ UBAH WARNA BORDER FOKUS KE 389841
+                borderSide: BorderSide(color: _primaryGreen),
               ),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -375,7 +377,8 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
                 onPressed: _ambilFotoWajah,
                 child: Text(
                   'Ambil Foto Wajah >',
-                  style: GoogleFonts.poppins(color: const Color(0xFF859F3D)),
+                  // ✅ UBAH WARNA TEXT LINK KE 389841
+                  style: GoogleFonts.poppins(color: _primaryGreen),
                 ),
               )
             ],
@@ -411,7 +414,8 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
               _setujuSyarat = value ?? false;
             });
           },
-          activeColor: const Color(0xFF859F3D),
+          // ✅ UBAH WARNA CHECKBOX KE 389841
+          activeColor: _primaryGreen,
         ),
         Expanded(
           child: RichText(
@@ -447,7 +451,8 @@ class _FormIdentitasPageState extends State<FormIdentitasPage> {
 
   Widget _buildStep(
       {required String number, required String label, required bool isActive}) {
-    final color = isActive ? const Color(0xFF859F3D) : Colors.grey;
+    // ✅ UBAH WARNA STEPPER AKTIF KE 389841
+    final color = isActive ? _primaryGreen : Colors.grey;
     return Column(
       children: [
         CircleAvatar(

@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/akun_page.dart';
 import 'package:terraserve_app/pages/dashboard_pages.dart';
-import 'package:terraserve_app/pages/favorit_page.dart';
 import 'package:terraserve_app/pages/pesan_page.dart';
 import 'package:terraserve_app/pages/services/navigation_service.dart';
 import 'package:terraserve_app/providers/farmer_application_provider.dart';
@@ -27,32 +26,55 @@ class _MainPageState extends State<MainPage> {
   bool _isNavVisible = true;
   final ScrollController _scrollController = ScrollController();
 
-  late final List<Widget> _pages;
+  late List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
 
+    // Setup Provider Farmer
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final farmerProvider =
           Provider.of<FarmerApplicationProvider>(context, listen: false);
       farmerProvider.setUserId(widget.user.id);
     });
 
+    // Inisialisasi Halaman
+    _initPages();
+
+    // Listener Scroll untuk Hide/Show Navbar
+    _scrollController.addListener(_onScroll);
+  }
+
+  // Dipisahkan agar lebih rapi
+  void _initPages() {
     _pages = [
-      DashboardPages(user: widget.user, controller: _scrollController),
+      // Index 0: Dashboard
+      DashboardPages(
+        user: widget.user,
+        controller: _scrollController,
+      ),
+
+      // Index 1: Pesan
       PesanPage(controller: _scrollController),
-      // ✅ PERUBAHAN 1: Berikan ScrollController ke PesananPage
-      PesananPage(controller: _scrollController),
-      FavoritPage(controller: _scrollController),
+
+      // Index 2: Pesanan (PENTING: Di sini kita pasang logika backToDashboard)
+      PesananPage(
+        controller: _scrollController,
+        backToDashboard: () {
+          // Ketika tombol back di PesananPage ditekan,
+          // panggil fungsi untuk pindah tab ke Index 0 (Beranda)
+          _onItemTapped(0);
+        },
+      ),
+
+      // Index 3: Akun
       AkunPage(
         user: widget.user,
         token: widget.token,
         controller: _scrollController,
       ),
     ];
-
-    _scrollController.addListener(_onScroll);
   }
 
   void _onScroll() {
@@ -80,11 +102,12 @@ class _MainPageState extends State<MainPage> {
     super.dispose();
   }
 
-  // ✅ PERUBAHAN 2: Logika disempurnakan
+  // Fungsi Pindah Tab
   void _onItemTapped(int index) {
-    // Cek jika tab yang dituju sama, scroll ke atas
-    if (index ==
-        Provider.of<NavigationService>(context, listen: false).selectedIndex) {
+    final navService = Provider.of<NavigationService>(context, listen: false);
+
+    if (index == navService.selectedIndex) {
+      // Jika klik tab yang sama, scroll ke atas
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           0.0,
@@ -93,11 +116,11 @@ class _MainPageState extends State<MainPage> {
         );
       }
     } else {
-      // Jika pindah tab, ubah indeks via provider
-      Provider.of<NavigationService>(context, listen: false).setIndex(index);
+      // Pindah Index via Provider
+      navService.setIndex(index);
     }
 
-    // Selalu pastikan navigasi bar muncul kembali saat tab di-tap
+    // Pastikan Navbar muncul saat pindah halaman
     if (!_isNavVisible) {
       setState(() {
         _isNavVisible = true;
@@ -109,18 +132,32 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Consumer<NavigationService>(
       builder: (context, navService, child) {
+        // Ambil index dari provider agar sinkron
+        int currentIndex = navService.selectedIndex;
+
+        // Safety check jika index di luar range
+        if (currentIndex >= _pages.length) {
+          currentIndex = 0;
+        }
+
         return Scaffold(
           backgroundColor: Colors.white,
+          // Menggunakan Stack agar Navbar melayang di atas konten
           body: Stack(
             children: [
-              _pages[navService.selectedIndex],
+              // Halaman Utama
+              // Kita gunakan IndexedStack jika ingin state halaman tersimpan (opsional),
+              // tapi _pages[currentIndex] seperti kodemu sebelumnya juga oke untuk refresh state.
+              _pages[currentIndex],
+
+              // Floating Navigation Bar
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                bottom: _isNavVisible ? 0 : -100,
-                left: 0,
-                right: 0,
-                child: _buildFloatingNavigationBar(navService.selectedIndex),
+                bottom: _isNavVisible ? 20 : -100, // Sembunyi ke bawah
+                left: 20,
+                right: 20,
+                child: _buildFloatingNavigationBar(currentIndex),
               ),
             ],
           ),
@@ -130,93 +167,91 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _buildFloatingNavigationBar(int selectedIndex) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(
-                icon: Icons.home,
-                label: 'Beranda',
-                index: 0,
-                selectedIndex: selectedIndex),
-            _buildNavItem(
-                icon: Icons.chat_bubble_outline,
-                label: 'Pesan',
-                index: 1,
-                selectedIndex: selectedIndex),
-            _buildNavItem(
-                icon: Icons.shopping_basket_outlined,
-                label: 'Pesanan',
-                index: 2,
-                selectedIndex: selectedIndex),
-            _buildNavItem(
-                icon: Icons.favorite_border,
-                label: 'Favorit',
-                index: 3,
-                selectedIndex: selectedIndex),
-            _buildNavItem(
-                icon: Icons.person_outline,
-                label: 'Akun',
-                index: 4,
-                selectedIndex: selectedIndex),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(50),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildNavItem(
+            imagePath: 'assets/images/nav_home.png',
+            label: 'Beranda',
+            index: 0,
+            selectedIndex: selectedIndex,
+          ),
+          _buildNavItem(
+            imagePath: 'assets/images/nav_chat.png',
+            label: 'Pesan',
+            index: 1,
+            selectedIndex: selectedIndex,
+          ),
+          _buildNavItem(
+            imagePath: 'assets/images/nav_pesanan.png',
+            label: 'Pesanan',
+            index: 2,
+            selectedIndex: selectedIndex,
+          ),
+          _buildNavItem(
+            imagePath: 'assets/images/nav_profile.png',
+            label: 'Profil',
+            index: 3,
+            selectedIndex: selectedIndex,
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildNavItem({
-    required IconData icon,
+    required String imagePath,
     required String label,
     required int index,
     required int selectedIndex,
   }) {
     final bool isSelected = selectedIndex == index;
-    return InkWell(
+
+    return GestureDetector(
       onTap: () => _onItemTapped(index),
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: isSelected
+            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 10)
+            : const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF389841) : Colors.transparent,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color:
-                    isSelected ? const Color(0xFF859F3D) : Colors.transparent,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: isSelected ? Colors.white : Colors.grey[600],
-                size: 24,
-              ),
+            Image.asset(
+              imagePath,
+              width: 24,
+              height: 24,
+              color: isSelected ? Colors.white : Colors.grey[400],
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-                color: isSelected ? Colors.black : Colors.grey[600],
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

@@ -1,7 +1,7 @@
 // lib/models/order_model.dart
 
 // Enum untuk merepresentasikan status pesanan
-enum OrderStatus { diproses, terkirim, dibatalkan }
+enum OrderStatus { diproses, dikemas, terkirim, selesai, dibatalkan }
 
 // Model atau "cetakan data" untuk sebuah pesanan
 class Order {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:terraserve_app/pages/intro_pages.dart';
+import 'intro_pages.dart'; // Navigasi lanjut ke IntroPages
 
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
@@ -17,6 +17,7 @@ class _StartupPageState extends State<StartupPage> {
         onTap: () {
           Navigator.pushReplacement(
             context,
+            // Lanjut ke IntroPages (Indikator 2)
             MaterialPageRoute(
               builder: (context) => const IntroPages(),
             ),
@@ -66,11 +67,12 @@ class _StartupPageState extends State<StartupPage> {
                       ),
                     ),
                     const Spacer(),
+                    // Indikator Halaman 1 (Rectangle di kiri)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Image.asset(
-                          'assets/images/Rectangle 3.png',
+                          'assets/images/aaa.png',
                           width: 27,
                           height: 8,
                         ),
