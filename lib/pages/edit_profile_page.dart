@@ -1,18 +1,17 @@
-import 'dart:io';
+// lib/pages/edit_profile_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
-// 1. Kembalikan import yang diperlukan
 import 'package:terraserve_app/pages/services/api_service.dart';
+// ✅ 1. Tambahkan import country_picker
+import 'package:country_picker/country_picker.dart';
 
 class EditProfilePage extends StatefulWidget {
-  // 2. Kembalikan parameter token
-  final String token; 
+  final String token;
   final String currentName;
   final String currentEmail;
   final String currentPhone;
-  final String? currentGender;
-  final String? currentBirthdate;
+  final String? currentAddress;
 
   const EditProfilePage({
     super.key,
@@ -20,8 +19,7 @@ class EditProfilePage extends StatefulWidget {
     required this.currentName,
     required this.currentEmail,
     required this.currentPhone,
-    this.currentGender,
-    this.currentBirthdate,
+    this.currentAddress,
   });
 
   @override
@@ -32,28 +30,42 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _dateController = TextEditingController();
+  final _addressController = TextEditingController();
 
-  File? _imageFile;
-  final ImagePicker _picker = ImagePicker();
+  final Color _primaryGreen = const Color(0xFF389841);
 
-  String? _selectedGender;
-  final List<String> _genders = ['Laki-laki', 'Perempuan'];
+  // ✅ 2. Tambahkan variabel state untuk Negara (Default Indonesia)
+  Country _selectedCountry = Country(
+    phoneCode: '62',
+    countryCode: 'ID',
+    e164Sc: 0,
+    geographic: true,
+    level: 1,
+    name: 'Indonesia',
+    example: 'Indonesia',
+    displayName: 'Indonesia',
+    displayNameNoCountryCode: 'ID',
+    e164Key: '',
+  );
 
   @override
   void initState() {
     super.initState();
     _nameController.text = widget.currentName;
     _emailController.text = widget.currentEmail;
-    _phoneController.text = widget.currentPhone;
-    _dateController.text = widget.currentBirthdate ?? '';
 
-    // Perbaikan untuk DropdownButton tetap ada
-    if (widget.currentGender != null && _genders.contains(widget.currentGender)) {
-      _selectedGender = widget.currentGender;
-    } else {
-      _selectedGender = null;
+    // Logika membersihkan awalan nomor telepon agar hanya tersisa angkanya saja di controller
+    String phone = widget.currentPhone;
+    if (phone.startsWith('+62')) {
+      phone = phone.substring(3);
+    } else if (phone.startsWith('62')) {
+      phone = phone.substring(2);
+    } else if (phone.startsWith('0')) {
+      phone = phone.substring(1);
     }
+    _phoneController.text = phone;
+
+    _addressController.text = widget.currentAddress ?? '';
   }
 
   @override
@@ -61,50 +73,38 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _dateController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
-    }
-  }
-
-  // --- PERBAIKAN DI SINI ---
-  // Mengubah logika update menjadi lebih tangguh dengan try-catch
   Future<void> _updateProfile() async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
-    final phone = _phoneController.text.trim();
-    final gender = _selectedGender ?? '';
-    final birthdate = _dateController.text.trim();
+    final phoneRaw = _phoneController.text.trim();
+    final address = _addressController.text.trim();
+
+    // ✅ 3. Gunakan kode negara dari _selectedCountry, bukan hardcode +62 lagi
+    final phoneFormatted = '+${_selectedCountry.phoneCode}$phoneRaw';
 
     try {
-      // Panggil API untuk update. Kita asumsikan akan error jika gagal.
       await ApiService.updateProfile(
         name,
         email,
-        phone,
-        gender,
-        birthdate,
+        phoneFormatted,
+        address,
         widget.token,
       );
 
-      // Jika kode mencapai baris ini, berarti update berhasil.
       if (mounted) {
-        // Kirim data baru kembali ke AkunPage
         final updatedData = {
           'name': name,
           'email': email,
+          'phone': phoneFormatted,
+          'address': address,
         };
         Navigator.pop(context, updatedData);
       }
     } catch (e) {
-      // Jika terjadi error saat memanggil API, tampilkan pesan.
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -115,87 +115,106 @@ class _EditProfilePageState extends State<EditProfilePage> {
       }
     }
   }
-  // --- AKHIR PERBAIKAN ---
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new,
+              color: Colors.black, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           'Profile',
           style: GoogleFonts.poppins(
             color: Colors.black,
             fontWeight: FontWeight.w600,
+            fontSize: 18,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.grey[50],
+        backgroundColor: const Color(0xFFF9F9F9),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: _pickImage,
-              child: Stack(
-                alignment: Alignment.bottomRight,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage: _imageFile != null
-                        ? FileImage(_imageFile!)
-                        : const NetworkImage('https://i.pravatar.cc/150?img=47')
-                            as ImageProvider,
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: const CircleAvatar(
+                      radius: 50,
+                      backgroundImage:
+                          AssetImage('assets/images/user_avatar.png'),
+                    ),
                   ),
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.camera_alt,
-                        size: 18, color: Colors.grey[800]),
+                  const SizedBox(height: 16),
+                  Text(
+                    _nameController.text.isNotEmpty
+                        ? _nameController.text
+                        : "Nama Pengguna",
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _emailController.text.isNotEmpty
+                        ? _emailController.text
+                        : "email@domain.com",
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  _buildTextField(
+                      controller: _nameController, hint: "Nama Lengkap"),
+                  const SizedBox(height: 16),
+                  _buildTextField(controller: _emailController, hint: "Email"),
+                  const SizedBox(height: 16),
+
+                  // ✅ 4. Panggil Widget Phone Field yang baru
+                  _buildPhoneField(),
+
+                  const SizedBox(height: 16),
+                  _buildAddressField(),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              _nameController.text,
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _emailController.text,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 32),
-            _buildTextField(hint: 'Nama Lengkap', controller: _nameController),
-            const SizedBox(height: 16),
-            _buildTextField(hint: 'Email', controller: _emailController),
-            const SizedBox(height: 16),
-            _buildPhoneNumberField(),
-            const SizedBox(height: 16),
-            _buildGenderDropdown(),
-            const SizedBox(height: 16),
-            _buildDatePicker(),
-            const SizedBox(height: 40),
-            SizedBox(
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: SizedBox(
               width: double.infinity,
+              height: 55,
               child: ElevatedButton(
-                onPressed: _updateProfile, // Panggil fungsi yang sudah diperbarui
+                onPressed: _updateProfile,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF859F3D),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: _primaryGreen,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(15),
                   ),
+                  elevation: 0,
                 ),
                 child: Text(
                   'Update Profile',
@@ -207,124 +226,162 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
               ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ✅ 5. Widget Khusus untuk Input Nomor Telepon dengan Country Picker
+  // (Menggantikan implementasi Row manual yang error gambar tadi)
+  Widget _buildPhoneField() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: TextFormField(
+        controller: _phoneController,
+        keyboardType: TextInputType.phone,
+        style: GoogleFonts.poppins(fontSize: 14),
+        decoration: InputDecoration(
+          hintText: "Nomor Telepon",
+          hintStyle: GoogleFonts.poppins(color: Colors.grey[400], fontSize: 14),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          // Bagian Prefix Icon untuk memilih negara
+          prefixIcon: GestureDetector(
+            onTap: () {
+              showCountryPicker(
+                context: context,
+                onSelect: (Country country) {
+                  setState(() {
+                    _selectedCountry = country;
+                  });
+                },
+                countryListTheme: CountryListThemeData(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                  bottomSheetHeight: 500,
+                  inputDecoration: InputDecoration(
+                    labelText: 'Cari Negara',
+                    hintText: 'Mulai ketik untuk mencari',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.grey.withOpacity(0.2)),
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.only(left: 16, right: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _selectedCountry.flagEmoji, // Menampilkan bendera emoji
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '+${_selectedCountry.phoneCode}', // Menampilkan kode +62
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildTextField({
-    required String hint,
     required TextEditingController controller,
+    required String hint,
+    TextInputType keyboardType = TextInputType.text,
   }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: GoogleFonts.poppins(color: Colors.grey[600]),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          )
+        ],
       ),
-    );
-  }
-
-  Widget _buildPhoneNumberField() {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        style: GoogleFonts.poppins(fontSize: 14),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: GoogleFonts.poppins(color: Colors.grey[400], fontSize: 14),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
           ),
-          child: Text('+62', style: GoogleFonts.poppins()),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: TextFormField(
-            controller: _phoneController,
-            decoration: InputDecoration(
-              hintText: 'Nomor Telepon',
-              hintStyle: GoogleFonts.poppins(color: Colors.grey[600]),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            ),
-            keyboardType: TextInputType.phone,
+      ),
+    );
+  }
+
+  Widget _buildAddressField() {
+    return Container(
+      height: 120,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: TextFormField(
+        controller: _addressController,
+        maxLines: 5,
+        style: GoogleFonts.poppins(fontSize: 14),
+        decoration: InputDecoration(
+          hintText: 'Alamat',
+          hintStyle: GoogleFonts.poppins(color: Colors.grey[400], fontSize: 14),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
           ),
+          contentPadding: const EdgeInsets.all(16),
         ),
-      ],
-    );
-  }
-
-  Widget _buildGenderDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _selectedGender,
-      hint: Text(
-        'Jenis Kelamin',
-        style: GoogleFonts.poppins(color: Colors.grey[600]),
-      ),
-      onChanged: (value) => setState(() => _selectedGender = value),
-      items: _genders.map((gender) {
-        return DropdownMenuItem(
-          value: gender,
-          child: Text(gender, style: GoogleFonts.poppins()),
-        );
-      }).toList(),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      ),
-    );
-  }
-
-  Widget _buildDatePicker() {
-    return TextFormField(
-      controller: _dateController,
-      readOnly: true,
-      onTap: () async {
-        final pickedDate = await showDatePicker(
-          context: context,
-          initialDate:
-              DateTime.tryParse(_dateController.text) ?? DateTime(2000),
-          firstDate: DateTime(1900),
-          lastDate: DateTime.now(),
-        );
-        if (pickedDate != null) {
-          _dateController.text =
-              "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-        }
-      },
-      decoration: InputDecoration(
-        hintText: 'Apa tanggal lahir Anda?',
-        hintStyle: GoogleFonts.poppins(color: Colors.grey[600]),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        suffixIcon:
-            Icon(Icons.calendar_today_outlined, color: Colors.grey[600]),
       ),
     );
   }

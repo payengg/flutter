@@ -19,6 +19,14 @@ class RecommendationCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -33,21 +41,31 @@ class RecommendationCard extends StatelessWidget {
                   ? Image.network(
                       product.galleries.first,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey[100],
+                        child: const Icon(Icons.image_not_supported,
+                            color: Colors.grey),
+                      ),
                     )
                   : Container(
                       color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                      child: const Icon(Icons.image_not_supported,
+                          color: Colors.grey),
                     ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   product.name,
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.black,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -62,7 +80,11 @@ class RecommendationCard extends StatelessWidget {
                     Flexible(
                       child: Text(
                         'Rp${product.price.toStringAsFixed(0)}',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.black, // Harga hitam biar jelas
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -71,19 +93,23 @@ class RecommendationCard extends StatelessWidget {
                         cartService.addToCart(product);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('${product.name} ditambahkan ke keranjang!'),
+                            content: Text(
+                                '${product.name} ditambahkan ke keranjang!'),
                             duration: const Duration(seconds: 1),
-                            backgroundColor: const Color(0xFF859F3D),
+                            backgroundColor: const Color(0xFF389841),
                           ),
                         );
                       },
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0F4E8),
+                          // ✅ UBAH DISINI: Background Hijau Transparan/Muda
+                          color: const Color(0xFF389841).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.add, color: Color(0xFF859F3D)),
+                        // ✅ UBAH DISINI: Icon Hijau Tua Solid
+                        child: const Icon(Icons.add,
+                            color: Color(0xFF389841), size: 20),
                       ),
                     )
                   ],

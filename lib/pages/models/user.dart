@@ -8,6 +8,10 @@ class User {
   final String? gender;
   final String? birthdate;
   final String? profilePhotoUrl;
+  final String? address;
+
+  // ✅ 1. PASTIKAN INI ADA
+  final String? role;
 
   User({
     required this.id,
@@ -17,6 +21,9 @@ class User {
     this.gender,
     this.birthdate,
     this.profilePhotoUrl,
+    this.address,
+    // ✅ 2. PASTIKAN INI ADA DI CONSTRUCTOR
+    this.role,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -28,6 +35,9 @@ class User {
       gender: json['gender'],
       birthdate: json['birthdate'],
       profilePhotoUrl: json['profile_photo_url'],
+      address: json['address'],
+      // ✅ 3. INI PALING PENTING! (Menangkap data dari server)
+      role: json['roles'],
     );
   }
 
@@ -40,6 +50,9 @@ class User {
       'gender': gender,
       'birthdate': birthdate,
       'profile_photo_url': profilePhotoUrl,
+      'address': address,
+      // ✅ 4. Opsional, tapi bagus ada
+      'role': role,
     };
   }
 }

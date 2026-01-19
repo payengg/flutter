@@ -58,5 +58,45 @@ class OrderProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // Fungsi untuk menandai pesanan sudah dikemas (dikemas)
+  void markOrderAsPackaged(Order orderToUpdate) {
+    int index = _orders.indexWhere((order) =>
+        order.id == orderToUpdate.id &&
+        order.productName == orderToUpdate.productName);
+
+    if (index != -1) {
+      _orders[index] = Order(
+        id: _orders[index].id,
+        productName: _orders[index].productName,
+        quantity: _orders[index].quantity,
+        imageUrl: _orders[index].imageUrl,
+        status: OrderStatus.dikemas,
+        price: _orders[index].price,
+      );
+
+      notifyListeners();
+    }
+  }
+
+  // Fungsi untuk menandai pesanan sudah diterima (selesai)
+  void markOrderAsCompleted(Order orderToUpdate) {
+    int index = _orders.indexWhere((order) =>
+        order.id == orderToUpdate.id &&
+        order.productName == orderToUpdate.productName);
+
+    if (index != -1) {
+      _orders[index] = Order(
+        id: _orders[index].id,
+        productName: _orders[index].productName,
+        quantity: _orders[index].quantity,
+        imageUrl: _orders[index].imageUrl,
+        status: OrderStatus.selesai,
+        price: _orders[index].price,
+      );
+
+      notifyListeners();
+    }
+  }
   // ===========================================
 }

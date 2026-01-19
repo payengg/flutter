@@ -161,7 +161,9 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                   // Panggil fungsi _verifyCode saat tombol ditekan
                   onPressed: _verifyCode,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF859F3D),
+                    // --- UBAH WARNA TOMBOL DISINI ---
+                    backgroundColor: const Color(0xFF389841),
+                    // --------------------------------
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

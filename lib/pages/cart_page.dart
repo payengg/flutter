@@ -1,3 +1,5 @@
+// lib/pages/cart_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -85,7 +87,8 @@ class _CartPageState extends State<CartPage> {
                   }
                   final allProducts = snapshot.data!;
                   return SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
@@ -96,15 +99,18 @@ class _CartPageState extends State<CartPage> {
                         final product = allProducts[index];
                         return GestureDetector(
                           onTap: () {
-                             Navigator.push(
+                            Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => ProductDetailPage(product: product)),
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ProductDetailPage(product: product)),
                             );
                           },
                           child: RecommendationCard(product: product),
                         );
                       },
-                      childCount: allProducts.length > 4 ? 4 : allProducts.length,
+                      childCount:
+                          allProducts.length > 4 ? 4 : allProducts.length,
                     ),
                   );
                 },
@@ -120,7 +126,8 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildCartItemCard(BuildContext context, CartItem item, CartService cartService) {
+  Widget _buildCartItemCard(
+      BuildContext context, CartItem item, CartService cartService) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
@@ -135,7 +142,7 @@ class _CartPageState extends State<CartPage> {
             onChanged: (val) {
               cartService.toggleItemSelected(item);
             },
-            activeColor: const Color(0xFF859F3D),
+            activeColor: const Color(0xFF389841),
           ),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
@@ -153,7 +160,8 @@ class _CartPageState extends State<CartPage> {
               children: [
                 Text(
                   item.product.name,
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Text(
                   item.product.unit ?? 'per item',
@@ -164,28 +172,138 @@ class _CartPageState extends State<CartPage> {
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: const Color(0xFF859F3D),
+                    color: const Color(0xFF389841),
                   ),
                 ),
               ],
             ),
           ),
+          // --- KONTROL JUMLAH DI KERANJANG ---
           Row(
             children: [
-              _buildQuantityButton(
-                icon: Icons.remove,
-                onTap: () => cartService.decrementQuantity(item),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  item.quantity.toString(),
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+              // TOMBOL MINUS (Background Putih, Border Abu, Icon Hitam)
+              InkWell(
+                onTap: () {
+                  if (item.quantity == 1) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        contentPadding: const EdgeInsets.all(24),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Hapus produk?',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Apakah anda yakin ingin menghapus produk dari keranjang?',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(color: Colors.grey),
+                            ),
+                            const SizedBox(height: 24),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.grey[400],
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                    ),
+                                    child: Text(
+                                      'Tidak',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      cartService.decrementQuantity(item);
+                                      Navigator.pop(context);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF389841),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                    ),
+                                    child: Text(
+                                      'Ya',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  } else {
+                    cartService.decrementQuantity(item);
+                  }
+                },
+                borderRadius: BorderRadius.circular(5),
+                child: Container(
+                  height: 28,
+                  width: 28,
+                  decoration: BoxDecoration(
+                    color: Colors.white, // Background Putih
+                    border: Border.all(color: Colors.grey[300]!), // Border Abu
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child:
+                      const Icon(Icons.remove, size: 16, color: Colors.black),
                 ),
               ),
-              _buildQuantityButton(
-                icon: Icons.add,
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: Text(
+                  item.quantity.toString(),
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+
+              // TOMBOL PLUS (Background Hijau Transparan, Icon Hijau Tua)
+              InkWell(
                 onTap: () => cartService.incrementQuantity(item),
+                borderRadius: BorderRadius.circular(5),
+                child: Container(
+                  height: 28,
+                  width: 28,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF389841)
+                        .withOpacity(0.2), // Background Hijau Muda
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: const Icon(Icons.add,
+                      size: 16, color: Color(0xFF389841)), // Icon Hijau Tua
+                ),
               ),
             ],
           ),
@@ -194,26 +312,11 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildQuantityButton({required IconData icon, required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(5),
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(5),
-        ),
-        child: Icon(icon, size: 16),
-      ),
-    );
-  }
-
   Widget _buildCheckoutSection(BuildContext context, CartService cartService) {
     if (cartService.items.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
@@ -226,7 +329,7 @@ class _CartPageState extends State<CartPage> {
             onChanged: (val) {
               cartService.toggleSelectAll(val ?? false);
             },
-            activeColor: const Color(0xFF859F3D),
+            activeColor: const Color(0xFF389841),
           ),
           Text(
             'Pilih Semua',
@@ -255,14 +358,13 @@ class _CartPageState extends State<CartPage> {
             flex: 2,
             child: ElevatedButton(
               onPressed: () {
-                // ✅ Navigasi ke Halaman Checkout
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const CheckoutPage()),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF859F3D),
+                backgroundColor: const Color(0xFF389841),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:terraserve_app/pages/intro_pages2.dart';
+import 'intro_pages2.dart'; // Navigasi lanjut ke IntroPages2
 
 class IntroPages extends StatefulWidget {
   const IntroPages({super.key});
@@ -18,6 +18,7 @@ class _IntroPagesState extends State<IntroPages> {
         onTap: () {
           Navigator.pushReplacement(
             context,
+            // Lanjut ke IntroPages2 (Indikator 3)
             MaterialPageRoute(
               builder: (context) => const IntroPages2(),
             ),
@@ -26,6 +27,7 @@ class _IntroPagesState extends State<IntroPages> {
         child: Stack(
           fit: StackFit.expand,
           children: [
+            // Bagian Bawah: Gambar Ilustrasi Orang
             Align(
               alignment: Alignment.bottomCenter,
               child: Image.asset(
@@ -34,16 +36,24 @@ class _IntroPagesState extends State<IntroPages> {
                 fit: BoxFit.contain,
               ),
             ),
+
+            // Bagian Atas: Background Hijau (Vector) & Teks
             Align(
               alignment: Alignment.topCenter,
               child: Stack(
                 children: [
+                  // --- BAGIAN YANG DIUBAH ---
                   Image.asset(
                     'assets/images/vector_intro.png',
                     height: MediaQuery.of(context).size.height * 0.6,
                     width: double.infinity,
                     fit: BoxFit.fill,
+                    // Kita timpa warna asli gambar dengan warna baru (389841)
+                    color: const Color(0xFF389841),
+                    colorBlendMode: BlendMode.srcIn,
                   ),
+                  // --------------------------
+
                   Padding(
                     padding: const EdgeInsets.only(
                       top: 60,
@@ -77,6 +87,8 @@ class _IntroPagesState extends State<IntroPages> {
                 ],
               ),
             ),
+
+            // Bagian Indikator Halaman (Titik-titik bawah)
             Positioned(
               bottom: 40,
               left: 0,
@@ -84,15 +96,18 @@ class _IntroPagesState extends State<IntroPages> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Indikator Halaman 2 (Rectangle di tengah)
                   Image.asset(
                     'assets/images/Ellipse 1.png',
                     height: 8,
                   ),
                   const SizedBox(width: 6),
                   Image.asset(
-                    'assets/images/Rectangle 3.png',
+                    'assets/images/aaa.png',
                     height: 8,
                     width: 27,
+                    // Opsional: Jika indikator aktif juga mau diubah warnanya
+                    // color: const Color(0xFF389841),
                   ),
                   const SizedBox(width: 6),
                   Image.asset(

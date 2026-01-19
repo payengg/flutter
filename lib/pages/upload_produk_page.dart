@@ -307,7 +307,7 @@ class _UploadProdukPageState extends State<UploadProdukPage> {
     bool isActive = false,
     bool isDone = false,
   }) {
-    final color = isActive || isDone ? const Color(0xFF859F3D) : Colors.grey;
+    final color = isActive || isDone ? const Color(0xFF389841) : Colors.grey;
     return Column(
       children: [
         CircleAvatar(
@@ -366,7 +366,7 @@ class _UploadProdukPageState extends State<UploadProdukPage> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF859F3D)),
+                borderSide: const BorderSide(color: Color(0xFF389841)),
               ),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -537,8 +537,8 @@ class _UploadProdukPageState extends State<UploadProdukPage> {
         onPressed: _tambahProduk,
         style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 12),
-            foregroundColor: const Color(0xFF859F3D),
-            side: const BorderSide(color: Color(0xFF859F3D)),
+            foregroundColor: const Color(0xFF389841),
+            side: const BorderSide(color: Color(0xFF389841)),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15))),
       ),
@@ -551,7 +551,7 @@ class _UploadProdukPageState extends State<UploadProdukPage> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : _submitApplication,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF859F3D),
+          backgroundColor: const Color(0xFF389841),
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),

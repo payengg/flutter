@@ -55,7 +55,6 @@ class _LupaPwPagesState extends State<LupaPwPages> {
 
       final responseBody = json.decode(response.body);
 
-      // --- PERBAIKAN LOGIKA ADA DI SINI ---
       if (response.statusCode == 200) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -74,7 +73,6 @@ class _LupaPwPagesState extends State<LupaPwPages> {
           );
         }
       } else {
-        // Ini adalah blok untuk menangani GAGAL
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -329,14 +327,15 @@ class _LupaPwPagesState extends State<LupaPwPages> {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF859F3D),
-          disabledBackgroundColor: const Color(0xFF859F3D).withOpacity(0.5),
+          // --- UBAH WARNA TOMBOL DISINI ---
+          backgroundColor: const Color(0xFF389841),
+          // --------------------------------
+          disabledBackgroundColor: const Color(0xFF389841).withOpacity(0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child:
-            child ??
+        child: child ??
             Text(
               text,
               style: GoogleFonts.poppins(

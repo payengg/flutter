@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
-// Path import ini disesuaikan dengan struktur folder Anda saat ini
 import 'package:terraserve_app/pages/models/bank_model.dart';
 import 'package:terraserve_app/pages/models/cart_item_model.dart';
 import 'package:terraserve_app/providers/order_provider.dart';
@@ -17,12 +16,12 @@ import 'package:terraserve_app/pages/services/navigation_service.dart';
 
 class PaymentDetailsPage extends StatefulWidget {
   final Bank selectedBank;
-  final List<CartItem> cartItems; // Menerima data dari halaman sebelumnya
+  final List<CartItem> cartItems;
 
   const PaymentDetailsPage({
     super.key,
     required this.selectedBank,
-    required this.cartItems, // Menerima data dari halaman sebelumnya
+    required this.cartItems,
   });
 
   @override
@@ -32,6 +31,9 @@ class PaymentDetailsPage extends StatefulWidget {
 class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
   late Timer _timer;
   Duration _countdownDuration = const Duration(hours: 24);
+
+  // Warna Hijau Utama
+  final Color _primaryGreen = const Color(0xFF389841);
 
   @override
   void initState() {
@@ -72,13 +74,12 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Di aplikasi nyata, total pembayaran harus dioper dari halaman checkout
     double totalPembayaran = 0;
     for (var item in widget.cartItems) {
       totalPembayaran += item.product.price * item.quantity;
     }
-    // Tambahkan biaya layanan & pengiriman jika ada
-    totalPembayaran += 17000; // Contoh: 2000 layanan + 15000 pengiriman
+    // Tambahkan biaya layanan & pengiriman
+    totalPembayaran += 17000;
 
     const String vaNumber = "8810 88101234 567890";
 
@@ -115,17 +116,16 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
             const SizedBox(height: 16),
             _buildInstructionsCard(),
             const SizedBox(height: 24),
+
+            // TOMBOL SIMULASI PEMBAYARAN
             ElevatedButton(
               onPressed: () {
-                // 1. TAMBAHKAN PESANAN BARU KE ORDERPROVIDER
                 Provider.of<OrderProvider>(context, listen: false)
                     .addOrderFromCart(widget.cartItems);
 
-                // ✅ PERBAIKAN: Panggil removeSelectedItems, bukan clearCart
                 Provider.of<CartService>(context, listen: false)
                     .removeSelectedItems();
 
-                // 3. TAMPILKAN DIALOG SUKSES
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -152,7 +152,8 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                           child: Text('Lihat Pesanan',
                               style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF859F3D))),
+                                  // ✅ UBAH WARNA TEKS DISINI
+                                  color: _primaryGreen)),
                         )
                       ],
                     );
@@ -160,7 +161,8 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orangeAccent,
+                  // ✅ UBAH WARNA TOMBOL DISINI
+                  backgroundColor: _primaryGreen,
                   minimumSize: const Size(double.infinity, 48),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15))),
@@ -179,7 +181,6 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
     );
   }
 
-  // ... Sisa kode widget TIDAK BERUBAH ...
   Widget _buildTimerCard(String formattedDate) {
     return Container(
       width: double.infinity,
@@ -281,7 +282,8 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                   },
                   child: Text('Salin',
                       style: GoogleFonts.poppins(
-                          color: const Color(0xFF859F3D),
+                          // ✅ UBAH WARNA TEKS SALIN DISINI
+                          color: _primaryGreen,
                           fontWeight: FontWeight.bold)),
                 ),
               ],
@@ -388,8 +390,9 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                             'Dengan melanjutkan pembayaran, Anda menyetujui '),
                     TextSpan(
                       text: 'Syarat & Ketentuan kami.',
-                      style: const TextStyle(
-                          color: Color(0xFF859F3D),
+                      style: TextStyle(
+                          // ✅ UBAH WARNA TEKS SYARAT DISINI
+                          color: _primaryGreen,
                           fontWeight: FontWeight.bold),
                     ),
                   ]),
@@ -401,7 +404,8 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                 Navigator.of(context).popUntil((route) => route.isFirst);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF859F3D),
+                // ✅ UBAH WARNA TOMBOL KEMBALI DISINI
+                backgroundColor: _primaryGreen,
                 minimumSize: const Size(double.infinity, 55),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),

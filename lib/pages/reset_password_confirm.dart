@@ -38,13 +38,13 @@ class ResetPasswordConfirmPage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, // Pusatkan konten secara vertikal
+            mainAxisAlignment:
+                MainAxisAlignment.center, // Pusatkan konten secara vertikal
             crossAxisAlignment: CrossAxisAlignment.stretch, // Lebarkan konten
             children: [
               const Spacer(flex: 2), // Beri ruang di atas
 
               // Gambar konfirmasi
-              // Ganti 'assets/images/confirmation.png' dengan path gambar Anda yang sesuai
               Image.asset(
                 'assets/images/confirmation_gambar.png', // PASTIKAN PATH GAMBAR INI BENAR
                 height: 200,
@@ -82,12 +82,15 @@ class ResetPasswordConfirmPage extends StatelessWidget {
                   onPressed: () {
                     // Arahkan ke halaman login dan hapus semua halaman sebelumnya
                     Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const LoginPages()),
+                      MaterialPageRoute(
+                          builder: (context) => const LoginPages()),
                       (route) => false,
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF859F3D), // Warna sesuai desain
+                    // --- UBAH WARNA TOMBOL DISINI ---
+                    backgroundColor: const Color(0xFF389841),
+                    // --------------------------------
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
