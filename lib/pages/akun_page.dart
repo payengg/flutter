@@ -1,14 +1,12 @@
 // lib/pages/akun_page.dart
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:terraserve_app/pages/models/user.dart';
 import 'package:terraserve_app/pages/edit_profile_page.dart';
 import 'package:terraserve_app/pages/login_pages.dart';
 import 'package:terraserve_app/pages/daftar_petani_page.dart';
 import 'package:terraserve_app/pages/toko_saya_page.dart';
-import 'package:terraserve_app/pages/services/navigation_service.dart';
 
 class AkunPage extends StatefulWidget {
   final ScrollController? controller;
