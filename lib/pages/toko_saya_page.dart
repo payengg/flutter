@@ -1,7 +1,6 @@
-// lib/pages/toko_saya_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+// Pastikan import file halaman lain sesuai struktur project Anda
 import 'upload_product_page.dart';
 import 'pesanan_petani_page.dart';
 
@@ -10,19 +9,25 @@ class TokoSayaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding; // Untuk deteksi poni/notch
+    final isSmallDevice = size.height < 650;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
+      // Menggunakan SingleChildScrollView agar seluruh halaman bisa discroll
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // 1. HEADER SECTION (Banner + AppBar + Profile)
+            // 1. HEADER SECTION (Responsive & Safe Area aware)
             SizedBox(
-              height: 280, // Tinggi area header
+              // Tinggi header dinamis berdasarkan layar
+              height: size.height * (isSmallDevice ? 0.35 : 0.40),
               child: Stack(
                 children: [
-                  // A. BACKGROUND IMAGE (Banner Toko)
+                  // Background Banner
                   Container(
-                    height: 220,
+                    height: size.height * (isSmallDevice ? 0.28 : 0.32),
                     width: double.infinity,
                     decoration: const BoxDecoration(
                       color: Colors.grey,
@@ -32,19 +37,23 @@ class TokoSayaPage extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  // B. KONTEN DI ATAS BANNER
+                  // Overlay Content
                   Column(
                     children: [
-                      // Custom AppBar
+                      // Custom App Bar (Memperhitungkan Poni HP)
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 50, 16, 10),
+                        padding: EdgeInsets.only(
+                          top: padding.top + 10, // Jarak aman dari atas (poni)
+                          left: 16,
+                          right: 16,
+                          bottom: 10,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             IconButton(
                               icon: const Icon(Icons.arrow_back_ios,
-                                  color: Colors.white, size: 20),
+                                  color: Colors.white),
                               onPressed: () => Navigator.pop(context),
                             ),
                             Text(
@@ -60,90 +69,101 @@ class TokoSayaPage extends StatelessWidget {
                         ),
                       ),
 
-                      // Profile Card
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                const CircleAvatar(
-                                  radius: 28,
-                                  backgroundImage: NetworkImage(
-                                      'https://i.pravatar.cc/150?u=yanti'),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Petani Yanti',
-                                        style: GoogleFonts.poppins(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      Text(
-                                        'terraserve.id/petaniyanti',
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.grey,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
+                      // Card Profil Toko
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  const CircleAvatar(
+                                    radius: 30,
+                                    backgroundImage: NetworkImage(
+                                        'https://i.pravatar.cc/150?u=yanti'),
                                   ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: const Color(0xFF389841)),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    'Lihat Toko',
-                                    style: GoogleFonts.poppins(
-                                      color: const Color(0xFF389841),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Petani Yanti',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.poppins(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        Text(
+                                          'terraserve.id/petaniyanti',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.grey,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                const Icon(Icons.notifications_active_outlined,
-                                    color: Color(0xFF859F3D), size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Pemberitahuan Penjualan',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: const Color(0xFF389841)),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'Lihat Toko',
+                                      style: GoogleFonts.poppins(
+                                        color: const Color(0xFF389841),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              const Divider(
+                                  height: 1, color: Color(0xFFEEEEEE)),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  const Icon(
+                                      Icons.notifications_active_outlined,
+                                      color: Color(0xFF859F3D),
+                                      size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Pemberitahuan Penjualan',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -158,19 +178,21 @@ class TokoSayaPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // A. Pemberitahuan Penjual (Naik -20)
-                  _buildSellerNotificationCards(),
-
-                  // ✅ UPDATE DISINI: Mengubah offset dari -35 menjadi -55
-                  // Ini akan menarik seluruh konten di bawah ini LEBIH NAIK lagi ke atas
+                  // A. Pemberitahuan Penjual (Naik sedikit ke atas)
                   Transform.translate(
-                    offset: const Offset(0, -55),
+                    offset: const Offset(0, -20),
+                    child: _buildSellerNotificationCards(),
+                  ),
+
+                  // Gunakan Transform lagi atau hilangkan spacing jika ingin naik
+                  Transform.translate(
+                    offset: const Offset(0, -20),
                     child: Column(
                       children: [
-                        // B. Statistik Grid
+                        // B. Statistik Grid (FIXED: Menggunakan GridView)
                         _buildStatisticsGrid(),
-                        // kecilkan jarak agar box "Status Pesanan" lebih dekat
-                        const SizedBox(height: 5),
+
+                        const SizedBox(height: 20),
 
                         // C. Status Pesanan
                         _buildOrderStatusSection(context),
@@ -211,7 +233,9 @@ class TokoSayaPage extends StatelessWidget {
                           color: const Color(0xFFF1F8E9),
                           iconColor: const Color(0xFF389841),
                         ),
-                        const SizedBox(height: 40),
+
+                        // Jarak aman paling bawah
+                        SizedBox(height: padding.bottom + 40),
                       ],
                     ),
                   ),
@@ -227,169 +251,6 @@ class TokoSayaPage extends StatelessWidget {
   // --- WIDGET BUILDERS ---
 
   Widget _buildSellerNotificationCards() {
-    // Ditarik ke atas -20 pixel biar nempel Header
-    return Transform.translate(
-      offset: const Offset(0, -20),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.05),
-              spreadRadius: 1,
-              blurRadius: 5,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Pemberitahuan Penjual',
-              style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildGreenCard(
-                    'Kelas Online',
-                    'Belajar Jualan\nOnline via Video',
-                    'assets/images/box1.png'),
-                const SizedBox(width: 10),
-                _buildGreenCard('Komunitas', 'Temukan koneksi\nTerraserve',
-                    'assets/images/box2.png'),
-                const SizedBox(width: 10),
-                _buildGreenCard('Informasi', 'Lihat informasi\nterkini',
-                    'assets/images/box3.png'),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGreenCard(String title, String subtitle, String assetImage) {
-    // Per-bagian ukuran: icon lebih besar untuk box1 & box2, daunn agak diperkecil
-    final double iconSize =
-        (assetImage.contains('box1.png') || assetImage.contains('box2.png'))
-            ? 96
-            : 66;
-    const double leafWidth = 130; // agak diperkecil dari 150
-    return Expanded(
-      child: Container(
-        height: 175,
-        decoration: BoxDecoration(
-          // Gradasi Atas ke Bawah
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF389841), // Hijau Tua
-              Color(0xFFAEE636), // Hijau Lime
-            ],
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            children: [
-              // 1. GAMBAR DAUN (lebih besar dan ditampilkan DI ATAS ikon)
-
-              // 2. KONTEN (Icon & Teks) - TENGAH
-              Center(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Area icon dengan tinggi tetap supaya posisi teks sejajar
-                      SizedBox(
-                        height: 64,
-                        child: Center(
-                          child: Image.asset(
-                            assetImage,
-                            width: iconSize,
-                            height: iconSize,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Judul
-                      Text(
-                        title,
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 4),
-
-                      // Subtitle
-                      Text(
-                        subtitle,
-                        style: GoogleFonts.poppins(
-                          color: Colors.white.withOpacity(0.95),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // Daun overlay yang lebih besar, ditempatkan setelah konten agar muncul DI ATAS ikon
-              Align(
-                alignment: const Alignment(0, -0.28),
-                child: Opacity(
-                  opacity: 0.45,
-                  child: Image.asset(
-                    'assets/images/daunn.png',
-                    width: leafWidth,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatisticsGrid() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.6,
-      children: [
-        _buildStatCard(Icons.shopping_cart_outlined, 'Jumlah Pesanan', '1,204'),
-        _buildStatCard(Icons.inventory_2_outlined, 'Total Produk', '29'),
-        _buildStatCard(Icons.people_outline, 'Total Konsumen', '350'),
-        _buildStatCard(
-            Icons.monetization_on_outlined, 'Pendapatan', 'Rp 25,9 Juta'),
-      ],
-    );
-  }
-
-  Widget _buildStatCard(IconData icon, String title, String value) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -397,23 +258,164 @@ class TokoSayaPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.grey.withOpacity(0.05),
-              spreadRadius: 1,
-              blurRadius: 5),
+            color: Colors.grey.withOpacity(0.05),
+            spreadRadius: 1,
+            blurRadius: 5,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Pemberitahuan Penjual',
+            style:
+                GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 12),
+          // Menggunakan Row dengan Expanded agar responsif
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildGreenCard(
+                  'Kelas Online', 'Belajar Jualan', 'assets/images/box1.png'),
+              const SizedBox(width: 8),
+              _buildGreenCard(
+                  'Komunitas', 'Cari Koneksi', 'assets/images/box2.png'),
+              const SizedBox(width: 8),
+              _buildGreenCard(
+                  'Informasi', 'Info Terkini', 'assets/images/box3.png'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGreenCard(String title, String subtitle, String assetImage) {
+    // FIX: Menggunakan LayoutBuilder atau Flexible untuk isi card
+    return Expanded(
+      child: Container(
+        height: 140, // Tinggi fix agar seragam
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF389841), Color(0xFFAEE636)],
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Stack(
+          children: [
+            // Background Daun
+            Positioned(
+              right: -10,
+              top: -10,
+              child: Opacity(
+                opacity: 0.3,
+                child: Image.asset('assets/images/daunn.png', width: 80),
+              ),
+            ),
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(assetImage,
+                      height: 40, width: 40, fit: BoxFit.contain),
+                  const SizedBox(height: 8),
+                  FittedBox(
+                    child: Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // FIX: Grid Statistik yang stabil & anti-overpixel
+  Widget _buildStatisticsGrid() {
+    return GridView.count(
+      crossAxisCount: 2, // 2 kolom
+      shrinkWrap: true, // Agar bisa dalam scrollview
+      physics: const NeverScrollableScrollPhysics(), // Scroll ikut parent
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio:
+          1.5, // Rasio Lebar : Tinggi (1.5 = persegi panjang lebar)
+      padding: EdgeInsets.zero,
+      children: [
+        _buildStatCard(Icons.shopping_cart_outlined, 'Jumlah Pesanan', '1,204'),
+        _buildStatCard(Icons.inventory_2_outlined, 'Total Produk', '29'),
+        _buildStatCard(Icons.people_outline, 'Total Konsumen', '350'),
+        _buildStatCard(
+            Icons.monetization_on_outlined, 'Pendapatan', 'Rp 25,9jt'),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(IconData icon, String title, String value) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            spreadRadius: 1,
+            blurRadius: 5,
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: const Color(0xFF4B6028), size: 24),
-          const SizedBox(height: 8),
-          Text(title,
-              style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12)),
+          Icon(icon, color: const Color(0xFF4B6028), size: 28),
+          const Spacer(),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(color: Colors.grey, fontSize: 11),
+          ),
           const SizedBox(height: 4),
-          Text(value,
+          // FIX: FittedBox membuat angka mengecil jika terlalu panjang
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
               style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold, fontSize: 18)),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Colors.black87,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -427,9 +429,10 @@ class TokoSayaPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.grey.withOpacity(0.05),
-              spreadRadius: 1,
-              blurRadius: 5),
+            color: Colors.grey.withOpacity(0.05),
+            spreadRadius: 1,
+            blurRadius: 5,
+          ),
         ],
       ),
       child: Column(
@@ -452,13 +455,14 @@ class TokoSayaPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
+          // FIX: Gunakan Row dengan MainAxisAlignment spaceBetween agar rapi
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildStatusItem('10', 'Dikemas'),
               _buildStatusItem('79', 'Terkirim'),
-              _buildStatusItem('30', 'Dibatalkan'),
-              _buildStatusItem('0', 'Pengembalian'),
+              _buildStatusItem('30', 'Batal'), // Disingkat agar muat
+              _buildStatusItem('0', 'Retur'), // Disingkat agar muat
             ],
           ),
         ],
@@ -470,19 +474,27 @@ class TokoSayaPage extends StatelessWidget {
     return Column(
       children: [
         Container(
-          height: 50,
-          width: 60,
+          height: 45,
+          width: 55, // Lebar fixed yang aman
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: const Color(0xFFF4F8E6),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFFE0E0E0)),
           ),
-          child: Text(count,
-              style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: const Color(0xFF4B6028))),
+          child: FittedBox(
+            // Safety untuk angka besar
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                count,
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: const Color(0xFF4B6028)),
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 8),
         Text(label,
@@ -502,7 +514,7 @@ class TokoSayaPage extends StatelessWidget {
         const SizedBox(height: 12),
         Container(
           width: double.infinity,
-          height: 60,
+          height: 55,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -526,13 +538,13 @@ class TokoSayaPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.add_circle,
-                      color: Color(0xFF389841), size: 28),
+                      color: Color(0xFF389841), size: 26),
                   const SizedBox(width: 8),
                   Text(
                     'Tambah Produk',
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 15,
                       color: Colors.black87,
                     ),
                   ),
@@ -555,7 +567,7 @@ class TokoSayaPage extends StatelessWidget {
                 style: GoogleFonts.poppins(
                     fontWeight: FontWeight.bold, fontSize: 16)),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(20),
@@ -564,46 +576,55 @@ class TokoSayaPage extends StatelessWidget {
               child: Row(
                 children: [
                   const Icon(Icons.calendar_today,
-                      size: 14, color: Colors.grey),
+                      size: 12, color: Colors.grey),
                   const SizedBox(width: 4),
-                  Text('7 Hari Terakhir',
-                      style: GoogleFonts.poppins(fontSize: 12)),
+                  Text('7 Hari', style: GoogleFonts.poppins(fontSize: 11)),
                   const Icon(Icons.keyboard_arrow_down,
-                      size: 16, color: Colors.grey),
+                      size: 14, color: Colors.grey),
                 ],
               ),
             ),
           ],
         ),
         const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            _buildBar('Senin', 60, const Color(0xFFDAE998)),
-            _buildBar('Selasa', 40, const Color(0xFFDAE998)),
-            _buildBar('Rabu', 70, const Color(0xFFDAE998)),
-            _buildBar('Kamis', 50, const Color(0xFFDAE998)),
-            _buildBar('Jumat', 100, const Color(0xFF389841)),
-            _buildBar('Sabtu', 60, const Color(0xFFDAE998)),
-            _buildBar('Minggu', 80, const Color(0xFFDAE998)),
-          ],
+        // Grafik Batang Sederhana
+        SizedBox(
+          height: 150, // Beri tinggi pasti agar chart tidak error
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              _buildBar('Sn', 0.4),
+              _buildBar('Sl', 0.3),
+              _buildBar('Rb', 0.6),
+              _buildBar('Km', 0.4),
+              _buildBar('Jm', 0.8, isHighlight: true),
+              _buildBar('Sb', 0.5),
+              _buildBar('Mg', 0.7),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildBar(String label, double height, Color color) {
+  Widget _buildBar(String label, double heightPercentage,
+      {bool isHighlight = false}) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Container(
-          width: 25,
-          height: height,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
+        LayoutBuilder(builder: (ctx, constraint) {
+          return Container(
+            width: 20,
+            height: 100 * heightPercentage, // Tinggi maksimal chart 100px
+            decoration: BoxDecoration(
+              color: isHighlight
+                  ? const Color(0xFF389841)
+                  : const Color(0xFFDAE998),
+              borderRadius: BorderRadius.circular(6),
+            ),
+          );
+        }),
         const SizedBox(height: 8),
         Text(
           label,
@@ -622,26 +643,32 @@ class TokoSayaPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-              color: Colors.grey.withOpacity(0.05),
-              spreadRadius: 1,
-              blurRadius: 5),
+            color: Colors.grey.withOpacity(0.05),
+            spreadRadius: 1,
+            blurRadius: 5,
+          ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12)),
-              const SizedBox(height: 4),
-              Text(subtitle,
-                  style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold, fontSize: 14)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style:
+                        GoogleFonts.poppins(color: Colors.grey, fontSize: 11)),
+                const SizedBox(height: 2),
+                Text(subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold, fontSize: 13)),
+              ],
+            ),
           ),
-          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
         ],
       ),
     );
@@ -665,42 +692,43 @@ class TokoSayaPage extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: iconColor.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: iconColor, size: 30),
+            child: Icon(icon, color: iconColor, size: 24),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
                     style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 4),
+                        fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 2),
                 Text(subtitle,
                     style: GoogleFonts.poppins(
-                        fontSize: 11, color: Colors.black87)),
+                        fontSize: 10, color: Colors.black87)),
                 const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: iconColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    height: 30,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: iconColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 0),
-                      minimumSize: const Size(0, 32),
+                      child: Text(buttonText,
+                          style: GoogleFonts.poppins(
+                              fontSize: 11, color: Colors.white)),
                     ),
-                    child: Text(buttonText,
-                        style: GoogleFonts.poppins(
-                            fontSize: 12, color: Colors.white)),
                   ),
                 )
               ],

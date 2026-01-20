@@ -11,90 +11,98 @@ class StartupPage extends StatefulWidget {
 class _StartupPageState extends State<StartupPage> {
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallDevice = size.height < 650;
     return Scaffold(
       backgroundColor: Colors.white,
       body: GestureDetector(
         onTap: () {
           Navigator.pushReplacement(
             context,
-            // Lanjut ke IntroPages (Indikator 2)
             MaterialPageRoute(
               builder: (context) => const IntroPages(),
             ),
           );
         },
-        child: Stack(
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.66,
-              width: double.infinity,
-              child: Image.asset(
-                'assets/images/Vector 2.png',
-                fit: BoxFit.cover,
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.4,
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 32,
-                ),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(32),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final double topImageHeight =
+                constraints.maxHeight * (isSmallDevice ? 0.5 : 0.66);
+            final double bottomContainerHeight =
+                constraints.maxHeight * (isSmallDevice ? 0.45 : 0.4);
+            return Stack(
+              children: [
+                SizedBox(
+                  height: topImageHeight,
+                  width: constraints.maxWidth,
+                  child: Image.asset(
+                    'assets/images/Vector 2.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Image.asset(
-                      'assets/images/logo_terraserve.png',
-                      width: 45,
-                      height: 47.31,
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: bottomContainerHeight,
+                    width: constraints.maxWidth,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: constraints.maxWidth * 0.06,
+                      vertical: isSmallDevice ? 18 : 32,
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Selamat Datang\ndi TerraServe',
-                      style: TextStyle(
-                        fontFamily: 'PlayfairDisplay',
-                        fontSize: 36,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(32),
                       ),
                     ),
-                    const Spacer(),
-                    // Indikator Halaman 1 (Rectangle di kiri)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Image.asset(
-                          'assets/images/aaa.png',
-                          width: 27,
-                          height: 8,
+                          'assets/images/logo_terraserve.png',
+                          width: constraints.maxWidth * 0.13,
+                          height: constraints.maxHeight * 0.06,
                         ),
-                        const SizedBox(width: 6),
-                        Image.asset(
-                          'assets/images/Ellipse 1.png',
-                          width: 8,
-                          height: 8,
+                        SizedBox(height: isSmallDevice ? 8 : 16),
+                        const Text(
+                          'Selamat Datang\ndi TerraServe',
+                          style: TextStyle(
+                            fontFamily: 'PlayfairDisplay',
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
                         ),
-                        const SizedBox(width: 6),
-                        Image.asset(
-                          'assets/images/Ellipse 2.png',
-                          width: 8,
-                          height: 8,
+                        const Spacer(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/images/aaa.png',
+                              width: constraints.maxWidth * 0.08,
+                              height: 8,
+                            ),
+                            const SizedBox(width: 6),
+                            Image.asset(
+                              'assets/images/Ellipse 1.png',
+                              width: 8,
+                              height: 8,
+                            ),
+                            const SizedBox(width: 6),
+                            Image.asset(
+                              'assets/images/Ellipse 2.png',
+                              width: 8,
+                              height: 8,
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
