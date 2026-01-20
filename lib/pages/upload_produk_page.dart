@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:terraserve_app/pages/akun_page.dart';
-import 'package:terraserve_app/pages/dashboard_pages.dart';
 import 'package:terraserve_app/pages/models/application_data.dart';
 import 'package:terraserve_app/pages/models/product_category_model.dart';
 import 'package:terraserve_app/pages/pendaftaran_sukses_page.dart';

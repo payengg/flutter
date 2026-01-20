@@ -8,8 +8,11 @@ import 'package:terraserve_app/pages/login_pages.dart';
 import 'package:terraserve_app/pages/daftar_petani_page.dart';
 import 'package:terraserve_app/pages/services/api_service.dart';
 import 'package:terraserve_app/pages/toko_saya_page.dart';
+<<<<<<< HEAD
+=======
 // ✅ Import Halaman Favorit
 import 'package:terraserve_app/pages/favorit_page.dart';
+>>>>>>> 27f823c514beaffddb5177255c7eeab7585d42e7
 
 class AkunPage extends StatefulWidget {
   final ScrollController? controller;

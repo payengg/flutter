@@ -1,7 +1,12 @@
 // File: lib/pages/services/api_service.dart
 
 import 'dart:convert';
+<<<<<<< HEAD
+import 'package:http/http.dart'
+    as http; // Masih diperlukan untuk updateProfile dan fetchUser
+=======
 import 'package:http/http.dart' as http;
+>>>>>>> 27f823c514beaffddb5177255c7eeab7585d42e7
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:terraserve_app/pages/models/user.dart';
